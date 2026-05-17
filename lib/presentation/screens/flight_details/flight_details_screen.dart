@@ -46,6 +46,7 @@ class FlightDetailsScreen extends StatelessWidget {
           children: [
             _buildHeader(context),
             const SizedBox(height: 16),
+            // ⬇️ Scrollable cards section
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -55,12 +56,15 @@ class FlightDetailsScreen extends StatelessWidget {
                     _buildFlightInfoCard(f),
                     const SizedBox(height: 16),
                     _buildPassengersCard(),
-                    const SizedBox(height: 80),
-                    _buildDownloadButton(context, f),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
+            ),
+            // ⬇️ FIXED button at the bottom (outside scroll view)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: _buildDownloadButton(context, f),
             ),
           ],
         ),
