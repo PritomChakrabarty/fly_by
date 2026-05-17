@@ -148,7 +148,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.72),
+            color: Colors.white.withValues(alpha: 0.75),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.55),
@@ -157,7 +157,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 28,
+                blurRadius: 24,
                 offset: const Offset(0, 10),
               ),
             ],
