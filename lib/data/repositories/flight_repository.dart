@@ -12,6 +12,7 @@ class FlightRepository {
   Future<FlightSearchResponse> searchFlights({
     String from = '',
     String to = '',
+    String date = '',
     int passengers = 1,
     String sortBy = 'price_asc',
     String airline = '',
@@ -25,6 +26,7 @@ class FlightRepository {
     final response = await _api.post('/search', body: {
       'from': from,
       'to': to,
+      if (date.isNotEmpty) 'date': date,
       'passengers': passengers,
       'sort_by': sortBy,
       'page': page,
