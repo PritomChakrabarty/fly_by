@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -77,7 +76,7 @@ class FlightDetailsScreen extends ConsumerWidget {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha:0.05),
                     blurRadius: 8,
                   ),
                 ],
@@ -139,7 +138,7 @@ class FlightDetailsScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha:0.05),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -164,19 +163,33 @@ class FlightDetailsScreen extends ConsumerWidget {
                     ),
                     padding: const EdgeInsets.all(6),
                     child: ClipOval(
-                      child: f.airlineLogo.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: f.airlineLogo,
-                              fit: BoxFit.contain,
-                              placeholder: (_, __) => const SizedBox(),
-                              errorWidget: (_, __, ___) => const Icon(
-                                Icons.flight,
-                                size: 18,
-                                color: Color(0xFF6B7280),
-                              ),
-                            )
-                          : const Icon(Icons.flight,
-                              size: 18, color: Color(0xFF6B7280)),
+                      child: () {
+                        final iata = f.flightNumber.length >= 2
+                            ? f.flightNumber.substring(0, 2)
+                            : '';
+                        final fallback = Center(
+                          child: Text(
+                            f.airlineName.isNotEmpty
+                                ? f.airlineName[0].toUpperCase()
+                                : '✈',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF374151),
+                            ),
+                          ),
+                        );
+                        if (iata.isEmpty) return fallback;
+                        return Image.network(
+                          'https://www.gstatic.com/flights/airline_logos/70px/$iata.png',
+                          width: 28,
+                          height: 28,
+                          fit: BoxFit.contain,
+                          loadingBuilder: (_, child, progress) =>
+                              progress == null ? child : const SizedBox.shrink(),
+                          errorBuilder: (_, __, ___) => fallback,
+                        );
+                      }(),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -381,7 +394,7 @@ class FlightDetailsScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha:0.05),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -487,12 +500,14 @@ class FlightDetailsScreen extends ConsumerWidget {
           decoration: const BoxDecoration(shape: BoxShape.circle),
           child: ClipOval(
             child: p.profilePicture.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: p.profilePicture,
+                ? Image.network(
+                    p.profilePicture,
+                    width: 38,
+                    height: 38,
                     fit: BoxFit.cover,
-                    placeholder: (_, __) =>
-                        Container(color: Colors.grey.shade200),
-                    errorWidget: (_, __, ___) =>
+                    loadingBuilder: (_, child, progress) =>
+                        progress == null ? child : Container(color: Colors.grey.shade200),
+                    errorBuilder: (_, __, ___) =>
                         Container(color: Colors.grey.shade300),
                   )
                 : Container(color: Colors.grey.shade300),
