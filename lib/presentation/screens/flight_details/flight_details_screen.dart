@@ -574,21 +574,7 @@ class FlightDetailsScreen extends ConsumerWidget {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Boarding pass saved successfully!',
-                style: GoogleFonts.plusJakartaSans(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              backgroundColor: const Color(0xFF16A34A),
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        },
+        onPressed: () => context.push('/boarding-pass', extra: flightId),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF0A0A0A),
           foregroundColor: Colors.white,
