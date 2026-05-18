@@ -404,7 +404,7 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                           ),
                         ),
                         const SizedBox(height: 14),
-                        Container(height: 1, color: const Color(0xFFEEF0F3)),
+                        Container(height: 1, color: const Color(0xFFD1D5DB)),
                         const SizedBox(height: 14),
                         // TO
                         GestureDetector(
@@ -471,7 +471,7 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                 ],
               ),
               const SizedBox(height: 16),
-              Container(height: 1, color: const Color(0xFFEEF0F3)),
+              Container(height: 1, color: const Color(0xFFD1D5DB)),
               const SizedBox(height: 16),
               // ── DEPARTURE & AMOUNT ───────────────────────────────
               Row(
@@ -517,10 +517,13 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                               ),
                             ),
                           ],
+                          const SizedBox(height: 12),
+                          Container(height: 1, color: const Color(0xFFD1D5DB)),
                         ],
                       ),
                     ),
                   ),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
@@ -528,7 +531,7 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _label('Amount'),
+                          _label('Travellers'),
                           const SizedBox(height: 6),
                           Row(
                             children: [
@@ -548,13 +551,15 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                               ),
                             ],
                           ),
+                          const SizedBox(height: 12),
+                          Container(height: 1, color: const Color(0xFFD1D5DB)),
                         ],
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 16),
               // ── SEARCH BUTTON ────────────────────────────────────
               SizedBox(
                 width: double.infinity,
