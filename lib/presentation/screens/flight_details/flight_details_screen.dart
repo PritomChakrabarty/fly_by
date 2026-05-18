@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/models/flight_model.dart';
 import '../../providers/flight_providers.dart';
+import '../../widgets/app_painters.dart';
+import '../../widgets/common_widgets.dart';
 
 class FlightDetailsScreen extends ConsumerWidget {
   final int? flightId;
@@ -67,25 +69,9 @@ class FlightDetailsScreen extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Row(
         children: [
-          GestureDetector(
+          CircularIconButton(
+            icon: Icons.arrow_back_ios_new_rounded,
             onTap: () => context.pop(),
-            child: Container(
-              width: 40, height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha:0.05),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                size: 16, color: Color(0xFF0A0A0A),
-              ),
-            ),
           ),
           Expanded(
             child: Center(
@@ -145,7 +131,7 @@ class FlightDetailsScreen extends ConsumerWidget {
         ],
       ),
       child: ClipPath(
-        clipper: _TicketClipper(notchFromBottom: 75),
+        clipper: AppTicketClipper(notchFromBottom: 75),
         child: Container(
           color: Colors.white,
           padding: const EdgeInsets.all(18),
@@ -235,7 +221,7 @@ class FlightDetailsScreen extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: CustomPaint(
                             size: const Size(double.infinity, 1),
-                            painter: _DashedLinePainter(),
+                            painter: AppDashedLinePainter(),
                           ),
                         ),
                         Container(
@@ -325,31 +311,25 @@ class FlightDetailsScreen extends ConsumerWidget {
               const SizedBox(height: 18),
               CustomPaint(
                 size: const Size(double.infinity, 1),
-                painter: _DashedLinePainter(),
+                painter: AppDashedLinePainter(),
               ),
               const SizedBox(height: 18),
               // Terminal | Gate | Class
               Row(
                 children: [
+                  Expanded(child: InfoCell('TERMINAL', f.terminal ?? '-')),
                   Expanded(
-                    child: _detailColumn(
-                      'TERMINAL',
-                      f.terminal ?? '-',
-                      CrossAxisAlignment.start,
-                    ),
-                  ),
-                  Expanded(
-                    child: _detailColumn(
+                    child: InfoCell(
                       'GATE',
                       f.gate ?? '-',
-                      CrossAxisAlignment.center,
+                      align: CrossAxisAlignment.center,
                     ),
                   ),
                   Expanded(
-                    child: _detailColumn(
-                      'Class',
+                    child: InfoCell(
+                      'CLASS',
                       f.flightClass ?? '-',
-                      CrossAxisAlignment.end,
+                      align: CrossAxisAlignment.end,
                     ),
                   ),
                 ],
@@ -358,32 +338,6 @@ class FlightDetailsScreen extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _detailColumn(String label, String value, CrossAxisAlignment align) {
-    return Column(
-      crossAxisAlignment: align,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF9CA3AF),
-            letterSpacing: 0.5,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF0A0A0A),
-          ),
-        ),
-      ],
     );
   }
 
@@ -401,7 +355,7 @@ class FlightDetailsScreen extends ConsumerWidget {
         ],
       ),
       child: ClipPath(
-        clipper: _TicketClipper(notchFromBottom: 100),
+        clipper: AppTicketClipper(notchFromBottom: 100),
         child: Container(
           color: Colors.white,
           padding: const EdgeInsets.all(18),
@@ -422,7 +376,7 @@ class FlightDetailsScreen extends ConsumerWidget {
               const SizedBox(height: 18),
               CustomPaint(
                 size: const Size(double.infinity, 1),
-                painter: _DashedLinePainter(),
+                painter: AppDashedLinePainter(),
               ),
               const SizedBox(height: 18),
               // Render SVG barcode from API
@@ -435,7 +389,7 @@ class FlightDetailsScreen extends ConsumerWidget {
                         fit: BoxFit.contain,
                       )
                     : CustomPaint(
-                        painter: _BarcodePainter(),
+                        painter: AppBarcodePainter(),
                         size: Size.infinite,
                       ),
               ),
@@ -484,7 +438,7 @@ class FlightDetailsScreen extends ConsumerWidget {
         widgets.add(const SizedBox(height: 12));
         widgets.add(CustomPaint(
           size: const Size(double.infinity, 1),
-          painter: _DashedLinePainter(),
+          painter: AppDashedLinePainter(),
         ));
         widgets.add(const SizedBox(height: 12));
       }
@@ -595,62 +549,12 @@ class FlightDetailsScreen extends ConsumerWidget {
   }
 
   // ── ERROR STATES ──────────────────────────────────────────────────
-  Widget _buildErrorState(BuildContext context, WidgetRef ref, Object err) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline_rounded,
-              size: 64,
-              color: Color(0xFFEF4444),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Could not load flight details',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF0A0A0A),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              err.toString(),
-              textAlign: TextAlign.center,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 13,
-                color: const Color(0xFF6B7280),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () =>
-                  ref.invalidate(flightDetailsProvider(flightId!)),
-              icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: Text(
-                'Try Again',
-                style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w600),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 28, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _buildErrorState(BuildContext context, WidgetRef ref, Object err) =>
+      ErrorStateWidget(
+        error: err,
+        title: 'Could not load flight details',
+        onRetry: () => ref.invalidate(flightDetailsProvider(flightId!)),
+      );
 
   Widget _buildErrorScreen(BuildContext context, String message) {
     return Scaffold(
@@ -677,111 +581,3 @@ class FlightDetailsScreen extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// DASHED LINE PAINTER
-// ─────────────────────────────────────────────────────────────────────
-class _DashedLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFCBD5E1)
-      ..strokeWidth = 1
-      ..style = PaintingStyle.stroke;
-
-    const dashWidth = 3.0;
-    const dashGap = 3.0;
-    double startX = 0;
-    while (startX < size.width) {
-      canvas.drawLine(
-        Offset(startX, size.height / 2),
-        Offset(startX + dashWidth, size.height / 2),
-        paint,
-      );
-      startX += dashWidth + dashGap;
-    }
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// TICKET CLIPPER
-// ─────────────────────────────────────────────────────────────────────
-class _TicketClipper extends CustomClipper<Path> {
-  final double notchFromBottom;
-  const _TicketClipper({required this.notchFromBottom});
-
-  @override
-  Path getClip(Size size) {
-    const cornerRadius = 20.0;
-    const notchRadius = 10.0;
-    final notchY = size.height - notchFromBottom;
-
-    final path = Path();
-    path.moveTo(cornerRadius, 0);
-    path.lineTo(size.width - cornerRadius, 0);
-    path.quadraticBezierTo(size.width, 0, size.width, cornerRadius);
-    path.lineTo(size.width, notchY - notchRadius);
-    path.arcToPoint(
-      Offset(size.width, notchY + notchRadius),
-      radius: const Radius.circular(notchRadius),
-      clockwise: false,
-    );
-    path.lineTo(size.width, size.height - cornerRadius);
-    path.quadraticBezierTo(
-        size.width, size.height, size.width - cornerRadius, size.height);
-    path.lineTo(cornerRadius, size.height);
-    path.quadraticBezierTo(0, size.height, 0, size.height - cornerRadius);
-    path.lineTo(0, notchY + notchRadius);
-    path.arcToPoint(
-      Offset(0, notchY - notchRadius),
-      radius: const Radius.circular(notchRadius),
-      clockwise: false,
-    );
-    path.lineTo(0, cornerRadius);
-    path.quadraticBezierTo(0, 0, cornerRadius, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// FALLBACK BARCODE PAINTER (if API returns empty barcode)
-// ─────────────────────────────────────────────────────────────────────
-class _BarcodePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = const Color(0xFF0A0A0A);
-    final pattern = [
-      2.0, 1.0, 3.0, 1.0, 2.0, 1.5, 1.0, 2.5, 1.0, 3.0,
-      1.5, 1.0, 2.0, 1.0, 2.5, 1.0, 3.0, 1.5, 2.0, 1.0,
-      1.0, 2.0, 1.5, 3.0, 1.0, 2.5, 1.0, 1.5, 2.0, 1.0,
-    ];
-
-    double x = 0;
-    int i = 0;
-    while (x < size.width) {
-      final barWidth = pattern[i % pattern.length];
-      const gap = 1.5;
-
-      if (i % 2 == 0) {
-        final drawWidth =
-            (x + barWidth > size.width) ? size.width - x : barWidth;
-        canvas.drawRect(
-          Rect.fromLTWH(x, 0, drawWidth, size.height),
-          paint,
-        );
-      }
-
-      x += barWidth + gap;
-      i++;
-    }
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}

@@ -10,6 +10,8 @@ import '../../../data/repositories/flight_repository.dart';
 import '../../providers/flight_providers.dart';
 import '../../widgets/skeleton_loader.dart';
 import '../../widgets/offline_banner.dart';
+import '../../widgets/app_painters.dart';
+import '../../widgets/common_widgets.dart';
 
 // ─────────────────────────────────────────────────────────────────────
 // HOME SCREEN
@@ -208,14 +210,7 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+              const ModalHandle(),
               const SizedBox(height: 20),
               Text(
                 'Number of Passengers',
@@ -689,16 +684,9 @@ class _AirportSheetState extends ConsumerState<_AirportSheet> {
         child: Column(
           children: [
             // Handle
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: ModalHandle(),
             ),
             // Title
             Padding(
@@ -921,7 +909,7 @@ class _PopularFlightCard extends StatelessWidget {
         ],
       ),
       child: ClipPath(
-        clipper: _TicketShapeClipper(),
+        clipper: AppTicketClipper(notchFromBottom: 60),
         child: Container(
           color: Colors.white,
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
@@ -962,7 +950,7 @@ class _PopularFlightCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 6),
                           child: CustomPaint(
                             size: const Size(double.infinity, 1),
-                            painter: _DashedLinePainter(),
+                            painter: AppDashedLinePainter(),
                           ),
                         ),
                         Container(
@@ -1053,7 +1041,7 @@ class _PopularFlightCard extends StatelessWidget {
               const SizedBox(height: 18),
               CustomPaint(
                 size: const Size(double.infinity, 1),
-                painter: _DashedLinePainter(),
+                painter: AppDashedLinePainter(),
               ),
               const SizedBox(height: 14),
               // Price & stops
@@ -1118,71 +1106,3 @@ class _PopularFlightCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// TICKET SHAPE CLIPPER
-// ─────────────────────────────────────────────────────────────────────
-class _TicketShapeClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    const cornerRadius = 20.0;
-    const notchRadius = 10.0;
-    final notchY = size.height - 60;
-
-    final path = Path();
-    path.moveTo(cornerRadius, 0);
-    path.lineTo(size.width - cornerRadius, 0);
-    path.quadraticBezierTo(size.width, 0, size.width, cornerRadius);
-    path.lineTo(size.width, notchY - notchRadius);
-    path.arcToPoint(
-      Offset(size.width, notchY + notchRadius),
-      radius: const Radius.circular(notchRadius),
-      clockwise: false,
-    );
-    path.lineTo(size.width, size.height - cornerRadius);
-    path.quadraticBezierTo(
-        size.width, size.height, size.width - cornerRadius, size.height);
-    path.lineTo(cornerRadius, size.height);
-    path.quadraticBezierTo(0, size.height, 0, size.height - cornerRadius);
-    path.lineTo(0, notchY + notchRadius);
-    path.arcToPoint(
-      Offset(0, notchY - notchRadius),
-      radius: const Radius.circular(notchRadius),
-      clockwise: false,
-    );
-    path.lineTo(0, cornerRadius);
-    path.quadraticBezierTo(0, 0, cornerRadius, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// DASHED LINE PAINTER
-// ─────────────────────────────────────────────────────────────────────
-class _DashedLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFCBD5E1)
-      ..strokeWidth = 1
-      ..style = PaintingStyle.stroke;
-
-    const dashWidth = 3.0;
-    const dashGap = 3.0;
-    double startX = 0;
-    while (startX < size.width) {
-      canvas.drawLine(
-        Offset(startX, size.height / 2),
-        Offset(startX + dashWidth, size.height / 2),
-        paint,
-      );
-      startX += dashWidth + dashGap;
-    }
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}

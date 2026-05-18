@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/models/flight_model.dart';
 import '../../providers/flight_providers.dart';
+import '../../widgets/app_painters.dart';
+import '../../widgets/common_widgets.dart';
 
 class BoardingPassScreen extends ConsumerWidget {
   final int? flightId;
@@ -51,27 +53,9 @@ class BoardingPassScreen extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Row(
         children: [
-          GestureDetector(
+          CircularIconButton(
+            icon: Icons.arrow_back_ios_new_rounded,
             onTap: () => context.pop(),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                size: 16,
-                color: Color(0xFF0A0A0A),
-              ),
-            ),
           ),
           Expanded(
             child: Center(
@@ -85,37 +69,18 @@ class BoardingPassScreen extends ConsumerWidget {
               ),
             ),
           ),
-          GestureDetector(
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Boarding pass saved successfully!',
-                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500),
-                  ),
-                  backgroundColor: const Color(0xFF16A34A),
-                  behavior: SnackBarBehavior.floating,
-                  duration: const Duration(seconds: 2),
+          CircularIconButton(
+            icon: Icons.download_rounded,
+            iconSize: 20,
+            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Boarding pass saved successfully!',
+                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500),
                 ),
-              );
-            },
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.download_rounded,
-                size: 20,
-                color: Color(0xFF0A0A0A),
+                backgroundColor: const Color(0xFF16A34A),
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 2),
               ),
             ),
           ),
@@ -357,7 +322,7 @@ class BoardingPassScreen extends ConsumerWidget {
                           Row(
                             children: [
                               Expanded(
-                                child: _cell(
+                                child: InfoCell(
                                   'PASSENGER',
                                   passenger?.fullName ?? '-',
                                 ),
@@ -367,7 +332,7 @@ class BoardingPassScreen extends ConsumerWidget {
                                   height: 40,
                                   color: const Color(0xFFE2E8F0)),
                               Expanded(
-                                child: _cell(
+                                child: InfoCell(
                                   'SEAT',
                                   passenger?.seat ?? '-',
                                   align: CrossAxisAlignment.end,
@@ -382,14 +347,14 @@ class BoardingPassScreen extends ConsumerWidget {
                           Row(
                             children: [
                               Expanded(
-                                child: _cell('CLASS', f.flightClass ?? '-'),
+                                child: InfoCell('CLASS', f.flightClass ?? '-'),
                               ),
                               Container(
                                   width: 1,
                                   height: 40,
                                   color: const Color(0xFFE2E8F0)),
                               Expanded(
-                                child: _cell(
+                                child: InfoCell(
                                   'TERMINAL',
                                   f.terminal ?? '-',
                                   align: CrossAxisAlignment.center,
@@ -400,7 +365,7 @@ class BoardingPassScreen extends ConsumerWidget {
                                   height: 40,
                                   color: const Color(0xFFE2E8F0)),
                               Expanded(
-                                child: _cell(
+                                child: InfoCell(
                                   'GATE',
                                   f.gate ?? '-',
                                   align: CrossAxisAlignment.end,
@@ -415,7 +380,7 @@ class BoardingPassScreen extends ConsumerWidget {
                             const SizedBox(height: 12),
                             Align(
                               alignment: Alignment.centerLeft,
-                              child: _cell(
+                              child: InfoCell(
                                   'DATE', _formatDate(details.bookingDate)),
                             ),
                           ],
@@ -435,7 +400,7 @@ class BoardingPassScreen extends ConsumerWidget {
                     Container(color: const Color(0xFFF1F5F9)),
                     CustomPaint(
                       size: const Size(double.infinity, 1),
-                      painter: _PerforationPainter(),
+                      painter: AppDashedLinePainter(dashWidth: 6.0, dashGap: 4.0, strokeWidth: 1.5, startPadding: 20),
                     ),
                     // Half-circle notches on each side
                     Row(
@@ -472,8 +437,8 @@ class BoardingPassScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _cell('BOOKING REF', details.bookingReference),
-                        _cell(
+                        InfoCell('BOOKING REF', details.bookingReference),
+                        InfoCell(
                           'PASSENGERS',
                           '${details.passengers.length}',
                           align: CrossAxisAlignment.end,
@@ -491,7 +456,7 @@ class BoardingPassScreen extends ConsumerWidget {
                               fit: BoxFit.contain,
                             )
                           : CustomPaint(
-                              painter: _BarcodePainter(),
+                              painter: AppBarcodePainter(),
                               size: Size.infinite,
                             ),
                     ),
@@ -511,38 +476,6 @@ class BoardingPassScreen extends ConsumerWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _cell(String label, String value,
-      {CrossAxisAlignment align = CrossAxisAlignment.start}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Column(
-        crossAxisAlignment: align,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 9,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF9CA3AF),
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF0A0A0A),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
       ),
     );
   }
@@ -582,59 +515,5 @@ class BoardingPassScreen extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// PERFORATED DIVIDER PAINTER
-// ─────────────────────────────────────────────────────────────────────
-class _PerforationPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFCBD5E1)
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke;
-
-    const dashWidth = 6.0;
-    const dashGap = 4.0;
-    double startX = 20;
-    while (startX < size.width - 20) {
-      canvas.drawLine(
-        Offset(startX, size.height / 2),
-        Offset(startX + dashWidth, size.height / 2),
-        paint,
-      );
-      startX += dashWidth + dashGap;
-    }
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}
 
 // ─────────────────────────────────────────────────────────────────────
-// FALLBACK BARCODE PAINTER
-// ─────────────────────────────────────────────────────────────────────
-class _BarcodePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = const Color(0xFF0A0A0A);
-    final pattern = [
-      2.0, 1.0, 3.0, 1.0, 2.0, 1.5, 1.0, 2.5, 1.0, 3.0,
-      1.5, 1.0, 2.0, 1.0, 2.5, 1.0, 3.0, 1.5, 2.0, 1.0,
-    ];
-    double x = 0;
-    int i = 0;
-    while (x < size.width) {
-      final barWidth = pattern[i % pattern.length];
-      if (i % 2 == 0) {
-        final drawWidth =
-            (x + barWidth > size.width) ? size.width - x : barWidth;
-        canvas.drawRect(Rect.fromLTWH(x, 0, drawWidth, size.height), paint);
-      }
-      x += barWidth + 1.5;
-      i++;
-    }
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}

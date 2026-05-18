@@ -8,6 +8,8 @@ import '../../../data/repositories/flight_repository.dart';
 import '../../providers/flight_providers.dart';
 import '../../widgets/skeleton_loader.dart';
 import '../../widgets/offline_banner.dart';
+import '../../widgets/app_painters.dart';
+import '../../widgets/common_widgets.dart';
 
 // ─────────────────────────────────────────────────────────────────────
 // SORT OPTIONS
@@ -259,27 +261,9 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Row(
         children: [
-          GestureDetector(
+          CircularIconButton(
+            icon: Icons.arrow_back_ios_new_rounded,
             onTap: () => context.pop(),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                size: 16,
-                color: Color(0xFF0A0A0A),
-              ),
-            ),
           ),
           Expanded(
             child: Column(
@@ -374,63 +358,11 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
     );
   }
 
-  // ── ERROR STATE ───────────────────────────────────────────────────
-  Widget _buildErrorState(Object err) {
-    final isOffline = err is OfflineException;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isOffline ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
-              size: 64,
-              color: isOffline
-                  ? const Color(0xFFF97316)
-                  : const Color(0xFFEF4444),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              isOffline ? 'No Internet Connection' : 'Something went wrong',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF0A0A0A),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              err.toString(),
-              textAlign: TextAlign.center,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 13,
-                color: const Color(0xFF6B7280),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () => ref.invalidate(flightSearchProvider),
-              icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: Text(
-                'Try Again',
-                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _buildErrorState(Object err) => ErrorStateWidget(
+        error: err,
+        title: 'Something went wrong',
+        onRetry: () => ref.invalidate(flightSearchProvider),
+      );
 
   // ── EMPTY STATE ───────────────────────────────────────────────────
   Widget _buildEmptyState() {
@@ -555,16 +487,8 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
           ),
           child: Column(
             children: [
-              // Handle bar
               const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFCBD5E1),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+              const ModalHandle(),
               const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -879,7 +803,7 @@ class _FlightCard extends StatelessWidget {
         ],
       ),
       child: ClipPath(
-        clipper: _FlightCardClipper(),
+        clipper: AppTicketClipper(notchFromBottom: 85),
         child: Container(
           color: Colors.white,
           padding: const EdgeInsets.all(18),
@@ -938,8 +862,7 @@ class _FlightCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Stops badge
-                  _StopsBadge(stops: flight.stops),
+                  StopsBadge(stops: flight.stops),
                 ],
               ),
               const SizedBox(height: 18),
@@ -962,7 +885,7 @@ class _FlightCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: CustomPaint(
                             size: const Size(double.infinity, 1),
-                            painter: _DashedLinePainter(),
+                            painter: AppDashedLinePainter(),
                           ),
                         ),
                         Container(
@@ -1052,7 +975,7 @@ class _FlightCard extends StatelessWidget {
               const SizedBox(height: 18),
               CustomPaint(
                 size: const Size(double.infinity, 1),
-                painter: _DashedLinePainter(),
+                painter: AppDashedLinePainter(),
               ),
               const SizedBox(height: 18),
               // Price + Select button
@@ -1113,102 +1036,3 @@ class _FlightCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// STOPS BADGE
-// ─────────────────────────────────────────────────────────────────────
-class _StopsBadge extends StatelessWidget {
-  final int stops;
-  const _StopsBadge({required this.stops});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDirect = stops == 0;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: isDirect
-            ? const Color(0xFFDCFCE7)
-            : const Color(0xFFFEF3C7),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        isDirect
-            ? 'Direct'
-            : '$stops ${stops == 1 ? 'stop' : 'stops'}',
-        style: GoogleFonts.plusJakartaSans(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: isDirect
-              ? const Color(0xFF15803D)
-              : const Color(0xFF92400E),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// CLIPPERS & PAINTERS
-// ─────────────────────────────────────────────────────────────────────
-class _FlightCardClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    const cornerRadius = 20.0;
-    const notchRadius = 10.0;
-    final notchY = size.height - 85;
-
-    final path = Path();
-    path.moveTo(cornerRadius, 0);
-    path.lineTo(size.width - cornerRadius, 0);
-    path.quadraticBezierTo(size.width, 0, size.width, cornerRadius);
-    path.lineTo(size.width, notchY - notchRadius);
-    path.arcToPoint(
-      Offset(size.width, notchY + notchRadius),
-      radius: const Radius.circular(notchRadius),
-      clockwise: false,
-    );
-    path.lineTo(size.width, size.height - cornerRadius);
-    path.quadraticBezierTo(
-        size.width, size.height, size.width - cornerRadius, size.height);
-    path.lineTo(cornerRadius, size.height);
-    path.quadraticBezierTo(0, size.height, 0, size.height - cornerRadius);
-    path.lineTo(0, notchY + notchRadius);
-    path.arcToPoint(
-      Offset(0, notchY - notchRadius),
-      radius: const Radius.circular(notchRadius),
-      clockwise: false,
-    );
-    path.lineTo(0, cornerRadius);
-    path.quadraticBezierTo(0, 0, cornerRadius, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
-class _DashedLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFCBD5E1)
-      ..strokeWidth = 1
-      ..style = PaintingStyle.stroke;
-
-    const dashWidth = 3.0;
-    const dashGap = 3.0;
-    double startX = 0;
-    while (startX < size.width) {
-      canvas.drawLine(
-        Offset(startX, size.height / 2),
-        Offset(startX + dashWidth, size.height / 2),
-        paint,
-      );
-      startX += dashWidth + dashGap;
-    }
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}
