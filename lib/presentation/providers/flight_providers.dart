@@ -22,10 +22,10 @@ class FlightSearchParams {
   final String filterAircraftType;
 
   const FlightSearchParams({
-    this.from = 'CGK',
-    this.fromCity = 'Jakarta',
-    this.to = 'NRT',
-    this.toCity = 'Tokyo',
+    this.from = '',
+    this.fromCity = '',
+    this.to = '',
+    this.toCity = '',
     this.passengers = 1,
     this.sortBy = 'price_asc',
     this.date = '',

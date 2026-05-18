@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -297,44 +296,51 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
   Widget _buildSortChips(WidgetRef ref, FlightSearchParams params) {
     return SizedBox(
       height: 42,
-      child: ListView.separated(
+      child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: _sortOptions.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
-        itemBuilder: (context, index) {
-          final isActive = _sortOptions[index]['sort'] == params.sortBy;
-          return GestureDetector(
-            onTap: () {
-              ref.read(searchParamsProvider.notifier).state =
-                  params.copyWith(sortBy: _sortOptions[index]['sort']);
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              decoration: BoxDecoration(
-                color: isActive ? const Color(0xFF2563EB) : Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 6,
-                  ),
-                ],
+        child: Row(
+          children: List.generate(_sortOptions.length, (index) {
+            final isActive = _sortOptions[index]['sort'] == params.sortBy;
+            return Padding(
+              padding: EdgeInsets.only(
+                right: index < _sortOptions.length - 1 ? 10 : 0,
               ),
-              child: Center(
-                child: Text(
-                  _sortOptions[index]['label']!,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: isActive ? Colors.white : const Color(0xFF0A0A0A),
+              child: GestureDetector(
+                onTap: () {
+                  ref.read(searchParamsProvider.notifier).state =
+                      params.copyWith(sortBy: _sortOptions[index]['sort']);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 18, vertical: 10),
+                  decoration: BoxDecoration(
+                    color:
+                        isActive ? const Color(0xFF2563EB) : Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    _sortOptions[index]['label']!,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isActive
+                          ? Colors.white
+                          : const Color(0xFF0A0A0A),
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          }),
+        ),
       ),
     );
   }
@@ -792,6 +798,23 @@ class _FlightCard extends StatelessWidget {
   final FlightModel flight;
   const _FlightCard({required this.flight});
 
+  // Extract 2-char IATA code from flight number (e.g. "SG801" → "SG")
+  String get _iata =>
+      flight.flightNumber.length >= 2 ? flight.flightNumber.substring(0, 2) : '';
+
+  Widget get _logoFallback => Center(
+        child: Text(
+          flight.airlineName.isNotEmpty
+              ? flight.airlineName[0].toUpperCase()
+              : '✈',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF374151),
+          ),
+        ),
+      );
+
   Color get _logoBg {
     final name = flight.airlineName.toLowerCase();
     if (name.contains('citilink')) return const Color(0xFFDCFCE7);
@@ -804,6 +827,9 @@ class _FlightCard extends StatelessWidget {
     if (name.contains('singapore')) return const Color(0xFFDBEAFE);
     if (name.contains('malaysia')) return const Color(0xFFDCFCE7);
     if (name.contains('thai')) return const Color(0xFFFEF3C7);
+    if (name.contains('spicejet')) return const Color(0xFFFEE2E2);
+    if (name.contains('indigo')) return const Color(0xFFDBEAFE);
+    if (name.contains('air india')) return const Color(0xFFFEE2E2);
     return const Color(0xFFE5E7EB);
   }
 
@@ -840,22 +866,17 @@ class _FlightCard extends StatelessWidget {
                     ),
                     padding: const EdgeInsets.all(6),
                     child: ClipOval(
-                      child: flight.airlineLogo.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: flight.airlineLogo,
+                      child: _iata.isNotEmpty
+                          ? Image.network(
+                              'https://www.gstatic.com/flights/airline_logos/70px/$_iata.png',
+                              width: 28,
+                              height: 28,
                               fit: BoxFit.contain,
-                              placeholder: (_, __) => const SizedBox(),
-                              errorWidget: (_, __, ___) => const Icon(
-                                Icons.flight,
-                                size: 18,
-                                color: Color(0xFF6B7280),
-                              ),
+                              loadingBuilder: (_, child, progress) =>
+                                  progress == null ? child : const SizedBox.shrink(),
+                              errorBuilder: (_, __, ___) => _logoFallback,
                             )
-                          : const Icon(
-                              Icons.flight,
-                              size: 18,
-                              color: Color(0xFF6B7280),
-                            ),
+                          : _logoFallback,
                     ),
                   ),
                   const SizedBox(width: 12),

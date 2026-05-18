@@ -120,6 +120,8 @@ class _SearchCard extends ConsumerStatefulWidget {
 }
 
 class _SearchCardState extends ConsumerState<_SearchCard> {
+  bool _showErrors = false;
+
   // ── Airport picker ───────────────────────────────────────────────
   Future<void> _pickFromAirport() async {
     final result = await showModalBottomSheet<AirportModel>(
@@ -330,6 +332,9 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
     final toDisplay = params.toCity.isNotEmpty
         ? '${params.toCity} (${params.to})'
         : params.to;
+    final fromEmpty = params.from.isEmpty;
+    final toEmpty = params.to.isEmpty;
+    final dateEmpty = params.date.isEmpty;
     final passengerText =
         '${params.passengers} ${params.passengers == 1 ? 'person' : 'people'}';
     final dateText = _formatDate(params.date);
@@ -376,13 +381,25 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                               _label('From'),
                               const SizedBox(height: 6),
                               Text(
-                                fromDisplay,
+                                fromEmpty ? 'Select departure airport' : fromDisplay,
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF0A0A0A),
+                                  color: fromEmpty
+                                      ? const Color(0xFF9CA3AF)
+                                      : const Color(0xFF0A0A0A),
                                 ),
                               ),
+                              if (_showErrors && fromEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Please select a departure airport',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 11,
+                                    color: const Color(0xFFEF4444),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -399,13 +416,25 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                               _label('To'),
                               const SizedBox(height: 6),
                               Text(
-                                toDisplay,
+                                toEmpty ? 'Select arrival airport' : toDisplay,
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF0A0A0A),
+                                  color: toEmpty
+                                      ? const Color(0xFF9CA3AF)
+                                      : const Color(0xFF0A0A0A),
                                 ),
                               ),
+                              if (_showErrors && toEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Please select an arrival airport',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 11,
+                                    color: const Color(0xFFEF4444),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -464,7 +493,7 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
-                                    color: params.date.isEmpty
+                                    color: dateEmpty
                                         ? const Color(0xFF9CA3AF)
                                         : const Color(0xFF0A0A0A),
                                   ),
@@ -478,6 +507,16 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                               ),
                             ],
                           ),
+                          if (_showErrors && dateEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'Please select a departure date',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 11,
+                                color: const Color(0xFFEF4444),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -521,7 +560,13 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                 width: double.infinity,
                 height: 54,
                 child: ElevatedButton(
-                  onPressed: () => context.push('/results'),
+                  onPressed: () {
+                    if (fromEmpty || toEmpty || dateEmpty) {
+                      setState(() => _showErrors = true);
+                      return;
+                    }
+                    context.push('/results');
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0A0A0A),
                     foregroundColor: Colors.white,
