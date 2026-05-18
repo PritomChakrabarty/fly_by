@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/exceptions/app_exception.dart';
 import '../../../data/models/flight_model.dart';
 import '../../../data/repositories/flight_repository.dart';
 import '../../providers/flight_providers.dart';
+import '../../widgets/skeleton_loader.dart';
+import '../../widgets/offline_banner.dart';
 
 // ─────────────────────────────────────────────────────────────────────
 // SORT OPTIONS
@@ -81,8 +84,22 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
           _isLoadingMore = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _isLoadingMore = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingMore = false);
+        final msg = e is AppException
+            ? e.message
+            : 'Failed to load more flights.';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+            msg,
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500),
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+        ));
+      }
     }
   }
 
@@ -120,15 +137,14 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
           children: [
             Column(
               children: [
+                const OfflineBanner(),
                 _buildHeader(context, params),
                 const SizedBox(height: 16),
                 _buildSortChips(ref, params),
                 const SizedBox(height: 20),
                 Expanded(
                   child: flightsAsync.when(
-                    loading: () => const Center(
-                      child: CircularProgressIndicator(color: Color(0xFF2563EB)),
-                    ),
+                    loading: () => _buildSkeletonList(),
                     error: (err, _) => _buildErrorState(err),
                     data: (page1) {
                       // Fall back to page-1 data if listener hasn't fired yet
@@ -345,22 +361,38 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
     );
   }
 
+  // ── SKELETON LIST ─────────────────────────────────────────────────
+  Widget _buildSkeletonList() {
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 4,
+      itemBuilder: (_, __) => const Padding(
+        padding: EdgeInsets.only(bottom: 16),
+        child: FlightCardSkeleton(),
+      ),
+    );
+  }
+
   // ── ERROR STATE ───────────────────────────────────────────────────
   Widget _buildErrorState(Object err) {
+    final isOffline = err is OfflineException;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline_rounded,
+            Icon(
+              isOffline ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
               size: 64,
-              color: Color(0xFFEF4444),
+              color: isOffline
+                  ? const Color(0xFFF97316)
+                  : const Color(0xFFEF4444),
             ),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              isOffline ? 'No Internet Connection' : 'Something went wrong',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,

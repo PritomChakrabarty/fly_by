@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/services/preferences_service.dart';
 import '../../../data/models/flight_model.dart';
 import '../../../data/repositories/flight_repository.dart';
 import '../../providers/flight_providers.dart';
+import '../../widgets/skeleton_loader.dart';
+import '../../widgets/offline_banner.dart';
 
 // ─────────────────────────────────────────────────────────────────────
 // HOME SCREEN
@@ -33,7 +36,10 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
+          child: Column(
+          children: [
+            const OfflineBanner(),
+            Expanded(child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -54,9 +60,12 @@ class HomeScreen extends ConsumerWidget {
               ],
             ),
           ),
-        ),
-      ),
-    );
+          ),      // closes Expanded
+        ],        // closes outer Column.children
+        ),        // closes outer Column
+        ),        // closes SafeArea
+      ),          // closes Container
+    );            // closes Scaffold
   }
 }
 
@@ -565,12 +574,21 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                 width: double.infinity,
                 height: 54,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (fromEmpty || toEmpty || dateEmpty) {
                       setState(() => _showErrors = true);
                       return;
                     }
-                    context.push('/results');
+                    final params = ref.read(searchParamsProvider);
+                    await ref.read(preferencesServiceProvider).saveSearch(
+                      from: params.from,
+                      fromCity: params.fromCity,
+                      to: params.to,
+                      toCity: params.toCity,
+                      passengers: params.passengers,
+                    );
+                    if (!mounted) return;
+                    this.context.push('/results');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0A0A0A),
@@ -847,10 +865,16 @@ class _PopularFlightsSection extends ConsumerWidget {
         ),
         const SizedBox(height: 14),
         flightsAsync.when(
-          loading: () => const SizedBox(
+          loading: () => SizedBox(
             height: 185,
-            child: Center(
-              child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(left: 24, right: 8),
+              itemCount: 3,
+              itemBuilder: (_, __) => const Padding(
+                padding: EdgeInsets.only(right: 14),
+                child: PopularFlightSkeleton(),
+              ),
             ),
           ),
           error: (_, __) => const SizedBox(height: 0),

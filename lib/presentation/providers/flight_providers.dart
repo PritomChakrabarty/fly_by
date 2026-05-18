@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/flight_model.dart';
 import '../../data/repositories/flight_repository.dart';
+import '../../core/services/preferences_service.dart';
 
 // ─────────────────────────────────────────────────────────────────────
-// SEARCH PARAMETERS — Holds the search inputs from Home screen
+// SEARCH PARAMETERS
 // ─────────────────────────────────────────────────────────────────────
 class FlightSearchParams {
   final String from;
@@ -12,13 +13,13 @@ class FlightSearchParams {
   final String toCity;
   final int passengers;
   final String sortBy;
-  final String date; // YYYY-MM-DD, empty = no date filter
+  final String date;
 
   // Advanced filters
   final String filterAirline;
   final double filterPriceMin;
-  final double filterPriceMax; // 0 = no max
-  final int filterStops;        // -1 = any, 0 = direct, 1 = 1 stop
+  final double filterPriceMax;
+  final int filterStops;        // -1 = any, 0 = direct, 1+ = stops
   final String filterAircraftType;
 
   const FlightSearchParams({
@@ -116,20 +117,26 @@ class FlightSearchParams {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// 1. SEARCH PARAMS STATE — Updated by Home screen, watched by Results
+// 1. SEARCH PARAMS — initialised from saved preferences
 // ─────────────────────────────────────────────────────────────────────
-final searchParamsProvider = StateProvider<FlightSearchParams>(
-  (ref) => const FlightSearchParams(),
-);
+final searchParamsProvider = StateProvider<FlightSearchParams>((ref) {
+  final p = ref.watch(preferencesServiceProvider);
+  return FlightSearchParams(
+    from: p.lastFrom,
+    fromCity: p.lastFromCity,
+    to: p.lastTo,
+    toCity: p.lastToCity,
+    passengers: p.lastPassengers,
+  );
+});
 
 // ─────────────────────────────────────────────────────────────────────
-// 2. FLIGHT SEARCH RESULTS — Fetches page 1 based on search params
+// 2. FLIGHT SEARCH RESULTS — page 1, driven by search params
 // ─────────────────────────────────────────────────────────────────────
 final flightSearchProvider =
     FutureProvider.autoDispose<FlightSearchResponse>((ref) async {
   final params = ref.watch(searchParamsProvider);
   final repo = ref.watch(flightRepositoryProvider);
-
   return repo.searchFlights(
     from: params.from,
     to: params.to,
@@ -146,7 +153,7 @@ final flightSearchProvider =
 });
 
 // ─────────────────────────────────────────────────────────────────────
-// 3. POPULAR FLIGHTS — Cached home-screen flights (CGK → NRT default)
+// 3. POPULAR FLIGHTS — cached home-screen showcase (CGK → NRT)
 // ─────────────────────────────────────────────────────────────────────
 final popularFlightsProvider =
     FutureProvider<FlightSearchResponse>((ref) async {
@@ -161,7 +168,7 @@ final popularFlightsProvider =
 });
 
 // ─────────────────────────────────────────────────────────────────────
-// 4. FLIGHT DETAILS — Fetches detailed flight info by ID
+// 4. FLIGHT DETAILS
 // ─────────────────────────────────────────────────────────────────────
 final flightDetailsProvider =
     FutureProvider.autoDispose.family<FlightDetailsModel, int>(
@@ -172,29 +179,25 @@ final flightDetailsProvider =
 );
 
 // ─────────────────────────────────────────────────────────────────────
-// 5. AIRPORTS — Cached on first fetch, reused across screens
+// 5. AIRPORTS
 // ─────────────────────────────────────────────────────────────────────
 final departureAirportsProvider =
     FutureProvider<List<AirportModel>>((ref) async {
-  final repo = ref.watch(flightRepositoryProvider);
-  return repo.getDepartureAirports();
+  return ref.watch(flightRepositoryProvider).getDepartureAirports();
 });
 
 final arrivalAirportsProvider =
     FutureProvider<List<AirportModel>>((ref) async {
-  final repo = ref.watch(flightRepositoryProvider);
-  return repo.getArrivalAirports();
+  return ref.watch(flightRepositoryProvider).getArrivalAirports();
 });
 
 // ─────────────────────────────────────────────────────────────────────
-// 6. AIRLINES & AIRCRAFT — For filter dropdowns
+// 6. AIRLINES & AIRCRAFT — for filter dropdowns
 // ─────────────────────────────────────────────────────────────────────
 final airlinesProvider = FutureProvider<List<String>>((ref) async {
-  final repo = ref.watch(flightRepositoryProvider);
-  return repo.getAirlines();
+  return ref.watch(flightRepositoryProvider).getAirlines();
 });
 
 final aircraftTypesProvider = FutureProvider<List<String>>((ref) async {
-  final repo = ref.watch(flightRepositoryProvider);
-  return repo.getAircraftTypes();
+  return ref.watch(flightRepositoryProvider).getAircraftTypes();
 });
