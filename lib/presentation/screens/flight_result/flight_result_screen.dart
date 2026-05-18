@@ -1064,7 +1064,7 @@ class _FlightCard extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Select flight',
+                      'View Details',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
