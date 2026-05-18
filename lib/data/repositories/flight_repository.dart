@@ -35,7 +35,7 @@ class FlightRepository {
         'airline': airline,
         'price_min': priceMin,
         'price_max': priceMax,
-        'stops': stops,
+        if (stops >= 0) 'stops': stops,
         'aircraft_type': aircraftType,
       },
     });

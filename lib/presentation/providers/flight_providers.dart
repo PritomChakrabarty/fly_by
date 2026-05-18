@@ -14,6 +14,13 @@ class FlightSearchParams {
   final String sortBy;
   final String date; // YYYY-MM-DD, empty = no date filter
 
+  // Advanced filters
+  final String filterAirline;
+  final double filterPriceMin;
+  final double filterPriceMax; // 0 = no max
+  final int filterStops;        // -1 = any, 0 = direct, 1 = 1 stop
+  final String filterAircraftType;
+
   const FlightSearchParams({
     this.from = 'CGK',
     this.fromCity = 'Jakarta',
@@ -22,6 +29,11 @@ class FlightSearchParams {
     this.passengers = 1,
     this.sortBy = 'price_asc',
     this.date = '',
+    this.filterAirline = '',
+    this.filterPriceMin = 0,
+    this.filterPriceMax = 0,
+    this.filterStops = -1,
+    this.filterAircraftType = '',
   });
 
   FlightSearchParams copyWith({
@@ -32,6 +44,11 @@ class FlightSearchParams {
     int? passengers,
     String? sortBy,
     String? date,
+    String? filterAirline,
+    double? filterPriceMin,
+    double? filterPriceMax,
+    int? filterStops,
+    String? filterAircraftType,
   }) {
     return FlightSearchParams(
       from: from ?? this.from,
@@ -41,7 +58,28 @@ class FlightSearchParams {
       passengers: passengers ?? this.passengers,
       sortBy: sortBy ?? this.sortBy,
       date: date ?? this.date,
+      filterAirline: filterAirline ?? this.filterAirline,
+      filterPriceMin: filterPriceMin ?? this.filterPriceMin,
+      filterPriceMax: filterPriceMax ?? this.filterPriceMax,
+      filterStops: filterStops ?? this.filterStops,
+      filterAircraftType: filterAircraftType ?? this.filterAircraftType,
     );
+  }
+
+  bool get hasActiveFilters =>
+      filterAirline.isNotEmpty ||
+      filterPriceMin > 0 ||
+      filterPriceMax > 0 ||
+      filterStops >= 0 ||
+      filterAircraftType.isNotEmpty;
+
+  int get activeFilterCount {
+    int count = 0;
+    if (filterAirline.isNotEmpty) count++;
+    if (filterPriceMin > 0 || filterPriceMax > 0) count++;
+    if (filterStops >= 0) count++;
+    if (filterAircraftType.isNotEmpty) count++;
+    return count;
   }
 
   @override
@@ -54,7 +92,12 @@ class FlightSearchParams {
           toCity == other.toCity &&
           passengers == other.passengers &&
           sortBy == other.sortBy &&
-          date == other.date;
+          date == other.date &&
+          filterAirline == other.filterAirline &&
+          filterPriceMin == other.filterPriceMin &&
+          filterPriceMax == other.filterPriceMax &&
+          filterStops == other.filterStops &&
+          filterAircraftType == other.filterAircraftType;
 
   @override
   int get hashCode =>
@@ -64,7 +107,12 @@ class FlightSearchParams {
       toCity.hashCode ^
       passengers.hashCode ^
       sortBy.hashCode ^
-      date.hashCode;
+      date.hashCode ^
+      filterAirline.hashCode ^
+      filterPriceMin.hashCode ^
+      filterPriceMax.hashCode ^
+      filterStops.hashCode ^
+      filterAircraftType.hashCode;
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -75,7 +123,7 @@ final searchParamsProvider = StateProvider<FlightSearchParams>(
 );
 
 // ─────────────────────────────────────────────────────────────────────
-// 2. FLIGHT SEARCH RESULTS — Fetches flights based on search params
+// 2. FLIGHT SEARCH RESULTS — Fetches page 1 based on search params
 // ─────────────────────────────────────────────────────────────────────
 final flightSearchProvider =
     FutureProvider.autoDispose<FlightSearchResponse>((ref) async {
@@ -88,6 +136,12 @@ final flightSearchProvider =
     date: params.date,
     passengers: params.passengers,
     sortBy: params.sortBy,
+    airline: params.filterAirline,
+    priceMin: params.filterPriceMin,
+    priceMax: params.filterPriceMax,
+    stops: params.filterStops,
+    aircraftType: params.filterAircraftType,
+    page: 1,
   );
 });
 
