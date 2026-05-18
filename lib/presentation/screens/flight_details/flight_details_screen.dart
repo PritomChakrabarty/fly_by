@@ -488,7 +488,21 @@ class FlightDetailsScreen extends StatelessWidget {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: () => context.push('/boarding', extra: f),
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Boarding pass saved successfully!',
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              backgroundColor: const Color(0xFF16A34A),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF0A0A0A),
           foregroundColor: Colors.white,
