@@ -20,8 +20,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/details',
         builder: (ctx, state) {
-          final flight = state.extra as FlightModel?;
-          return FlightDetailsScreen(flight: flight);
+          final flightId = state.extra as int?;
+          return FlightDetailsScreen(flightId: flightId);
         },
       ),
     ],

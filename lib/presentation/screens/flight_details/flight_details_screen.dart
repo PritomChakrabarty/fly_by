@@ -1,43 +1,39 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/models/flight_model.dart';
+import '../../providers/flight_providers.dart';
 
-class FlightDetailsScreen extends StatelessWidget {
-  final FlightModel? flight;
-  const FlightDetailsScreen({super.key, this.flight});
+class FlightDetailsScreen extends ConsumerWidget {
+  final int? flightId;
+  const FlightDetailsScreen({super.key, this.flightId});
 
-  // Fallback flight in case nothing was passed
-  static const FlightModel _fallback = FlightModel(
-    airline: 'Citilink Airline',
-    airlineLogo: 'assets/icons/citilink_logo.webp',
-    departureTime: '01:30 AM',
-    arrivalTime: '01:30 AM',
-    departureCode: 'CGK',
-    departureCity: 'Jakarta',
-    arrivalCode: 'NRT',
-    arrivalCity: 'Tokyo',
-    duration: '7h 15m',
-    date: 'Jan 20, 2025',
-    price: 321,
-    flightId: 'ID3242113',
-    terminal: '2A',
-    gate: '19',
-    flightClass: 'Economy',
-    passengers: [],
-  );
-
-  // Logo bg color per airline
   Color _logoBg(String airline) {
     final a = airline.toLowerCase();
     if (a.contains('citilink')) return const Color(0xFFDCFCE7);
-    if (a.contains('catty')) return const Color(0xFFFEE2E2);
-    return const Color(0xFFDBEAFE);
+    if (a.contains('catty'))    return const Color(0xFFFEE2E2);
+    if (a.contains('lion'))     return const Color(0xFFFEE2E2);
+    if (a.contains('garuda'))   return const Color(0xFFDBEAFE);
+    if (a.contains('bird'))     return const Color(0xFFDBEAFE);
+    if (a.contains('airasia'))  return const Color(0xFFFEE2E2);
+    if (a.contains('japan'))    return const Color(0xFFFEE2E2);
+    if (a.contains('singapore'))return const Color(0xFFDBEAFE);
+    if (a.contains('malaysia')) return const Color(0xFFDCFCE7);
+    if (a.contains('thai'))     return const Color(0xFFFEF3C7);
+    return const Color(0xFFE5E7EB);
   }
 
   @override
-  Widget build(BuildContext context) {
-    final f = flight ?? _fallback;
+  Widget build(BuildContext context, WidgetRef ref) {
+    // If no flightId was passed, show error
+    if (flightId == null) {
+      return _buildErrorScreen(context, 'Flight ID not found');
+    }
+
+    final detailsAsync = ref.watch(flightDetailsProvider(flightId!));
 
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
@@ -46,25 +42,19 @@ class FlightDetailsScreen extends StatelessWidget {
           children: [
             _buildHeader(context),
             const SizedBox(height: 16),
-            // ⬇️ Scrollable cards section
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildFlightInfoCard(f),
-                    const SizedBox(height: 16),
-                    _buildPassengersCard(),
-                    const SizedBox(height: 16),
-                  ],
+              child: detailsAsync.when(
+                // ⏳ LOADING
+                loading: () => const Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF2563EB),
+                  ),
                 ),
+                // ❌ ERROR
+                error: (err, _) => _buildErrorState(context, ref, err),
+                // ✅ SUCCESS
+                data: (details) => _buildContent(context, details),
               ),
-            ),
-            // ⬇️ FIXED button at the bottom (outside scroll view)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              child: _buildDownloadButton(context, f),
             ),
           ],
         ),
@@ -81,8 +71,7 @@ class FlightDetailsScreen extends StatelessWidget {
           GestureDetector(
             onTap: () => context.pop(),
             child: Container(
-              width: 40,
-              height: 40,
+              width: 40, height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white,
@@ -95,8 +84,7 @@ class FlightDetailsScreen extends StatelessWidget {
               ),
               child: const Icon(
                 Icons.arrow_back_ios_new_rounded,
-                size: 16,
-                color: Color(0xFF0A0A0A),
+                size: 16, color: Color(0xFF0A0A0A),
               ),
             ),
           ),
@@ -115,6 +103,32 @@ class FlightDetailsScreen extends StatelessWidget {
           const SizedBox(width: 40),
         ],
       ),
+    );
+  }
+
+  // ── MAIN CONTENT (when data loaded) ───────────────────────────────
+  Widget _buildContent(BuildContext context, FlightDetailsModel details) {
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildFlightInfoCard(details.flight),
+                const SizedBox(height: 16),
+                _buildPassengersCard(details),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          child: _buildDownloadButton(context),
+        ),
+      ],
     );
   }
 
@@ -143,35 +157,43 @@ class FlightDetailsScreen extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: 40, height: 40,
                     decoration: BoxDecoration(
-                      color: _logoBg(f.airline),
+                      color: _logoBg(f.airlineName),
                       shape: BoxShape.circle,
                     ),
                     padding: const EdgeInsets.all(6),
                     child: ClipOval(
-                      child: Image.asset(
-                        f.airlineLogo,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) =>
-                            const Icon(Icons.flight, size: 20),
-                      ),
+                      child: f.airlineLogo.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: f.airlineLogo,
+                              fit: BoxFit.contain,
+                              placeholder: (_, __) => const SizedBox(),
+                              errorWidget: (_, __, ___) => const Icon(
+                                Icons.flight,
+                                size: 18,
+                                color: Color(0xFF6B7280),
+                              ),
+                            )
+                          : const Icon(Icons.flight,
+                              size: 18, color: Color(0xFF6B7280)),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      f.airline,
+                      f.airlineName,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0A0A0A),
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Text(
-                    f.flightId,
+                    f.flightId ?? f.flightNumber,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -297,14 +319,26 @@ class FlightDetailsScreen extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                      child: _detailColumn(
-                          'TERMINAL', f.terminal, CrossAxisAlignment.start)),
+                    child: _detailColumn(
+                      'TERMINAL',
+                      f.terminal ?? '-',
+                      CrossAxisAlignment.start,
+                    ),
+                  ),
                   Expanded(
-                      child: _detailColumn(
-                          'GATE', f.gate, CrossAxisAlignment.center)),
+                    child: _detailColumn(
+                      'GATE',
+                      f.gate ?? '-',
+                      CrossAxisAlignment.center,
+                    ),
+                  ),
                   Expanded(
-                      child: _detailColumn(
-                          'Class', f.flightClass, CrossAxisAlignment.end)),
+                    child: _detailColumn(
+                      'Class',
+                      f.flightClass ?? '-',
+                      CrossAxisAlignment.end,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -341,7 +375,7 @@ class FlightDetailsScreen extends StatelessWidget {
   }
 
   // ── PASSENGERS CARD ───────────────────────────────────────────────
-  Widget _buildPassengersCard() {
+  Widget _buildPassengersCard(FlightDetailsModel details) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -370,38 +404,42 @@ class FlightDetailsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _passengerRow(
-                avatarUrl: 'https://i.pravatar.cc/150?img=12',
-                label: 'PASSENGER 1',
-                name: 'Mr. Budiarti Rohman',
-                seat: '3A',
-              ),
-              const SizedBox(height: 12),
-              CustomPaint(
-                size: const Size(double.infinity, 1),
-                painter: _DashedLinePainter(),
-              ),
-              const SizedBox(height: 12),
-              _passengerRow(
-                avatarUrl: 'https://i.pravatar.cc/150?img=47',
-                label: 'PASSENGER 2',
-                name: 'Mrs. Samantha William',
-                seat: '3B',
-              ),
+              // Build dynamic passenger rows from API
+              ..._buildPassengerRows(details.passengers),
               const SizedBox(height: 18),
               CustomPaint(
                 size: const Size(double.infinity, 1),
                 painter: _DashedLinePainter(),
               ),
               const SizedBox(height: 18),
+              // Render SVG barcode from API
               SizedBox(
                 width: double.infinity,
-                height: 60,
-                child: CustomPaint(
-                  painter: _BarcodePainter(),
-                  size: Size.infinite,
-                ),
+                height: 70,
+                child: details.barcode.isNotEmpty
+                    ? SvgPicture.string(
+                        details.barcode,
+                        fit: BoxFit.contain,
+                      )
+                    : CustomPaint(
+                        painter: _BarcodePainter(),
+                        size: Size.infinite,
+                      ),
               ),
+              if (details.bookingReference.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Center(
+                  child: Text(
+                    details.bookingReference,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF6B7280),
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -409,25 +447,55 @@ class FlightDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _passengerRow({
-    required String avatarUrl,
-    required String label,
-    required String name,
-    required String seat,
-  }) {
+  /// Generate passenger rows with dashed separators between them
+  List<Widget> _buildPassengerRows(List<PassengerModel> passengers) {
+    if (passengers.isEmpty) {
+      return [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Text(
+            'No passenger information available',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              color: const Color(0xFF9CA3AF),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    final widgets = <Widget>[];
+    for (int i = 0; i < passengers.length; i++) {
+      widgets.add(_passengerRow(passengers[i]));
+      if (i < passengers.length - 1) {
+        widgets.add(const SizedBox(height: 12));
+        widgets.add(CustomPaint(
+          size: const Size(double.infinity, 1),
+          painter: _DashedLinePainter(),
+        ));
+        widgets.add(const SizedBox(height: 12));
+      }
+    }
+    return widgets;
+  }
+
+  Widget _passengerRow(PassengerModel p) {
     return Row(
       children: [
         Container(
-          width: 38,
-          height: 38,
+          width: 38, height: 38,
           decoration: const BoxDecoration(shape: BoxShape.circle),
           child: ClipOval(
-            child: Image.network(
-              avatarUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  Container(color: Colors.grey.shade300),
-            ),
+            child: p.profilePicture.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: p.profilePicture,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) =>
+                        Container(color: Colors.grey.shade200),
+                    errorWidget: (_, __, ___) =>
+                        Container(color: Colors.grey.shade300),
+                  )
+                : Container(color: Colors.grey.shade300),
           ),
         ),
         const SizedBox(width: 12),
@@ -436,7 +504,7 @@ class FlightDetailsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                label,
+                'PASSENGER ${p.passengerNumber}',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 10,
                   fontWeight: FontWeight.w500,
@@ -446,12 +514,14 @@ class FlightDetailsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                name,
+                p.fullName,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF0A0A0A),
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -470,7 +540,7 @@ class FlightDetailsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              seat,
+              p.seat,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -483,7 +553,8 @@ class FlightDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDownloadButton(BuildContext context, FlightModel f) {
+  // ── DOWNLOAD BUTTON ───────────────────────────────────────────────
+  Widget _buildDownloadButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -521,6 +592,88 @@ class FlightDetailsScreen extends StatelessWidget {
       ),
     );
   }
+
+  // ── ERROR STATES ──────────────────────────────────────────────────
+  Widget _buildErrorState(BuildContext context, WidgetRef ref, Object err) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 64,
+              color: Color(0xFFEF4444),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Could not load flight details',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF0A0A0A),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              err.toString(),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                color: const Color(0xFF6B7280),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () =>
+                  ref.invalidate(flightDetailsProvider(flightId!)),
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: Text(
+                'Try Again',
+                style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w600),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 28, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorScreen(BuildContext context, String message) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF1F5F9),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(context),
+            Expanded(
+              child: Center(
+                child: Text(
+                  message,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    color: const Color(0xFF6B7280),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -552,7 +705,7 @@ class _DashedLinePainter extends CustomPainter {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// TICKET CLIPPER — Customizable notch position
+// TICKET CLIPPER
 // ─────────────────────────────────────────────────────────────────────
 class _TicketClipper extends CustomClipper<Path> {
   final double notchFromBottom;
@@ -596,56 +749,25 @@ class _TicketClipper extends CustomClipper<Path> {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// BARCODE PAINTER — fills full width with varied bars
+// FALLBACK BARCODE PAINTER (if API returns empty barcode)
 // ─────────────────────────────────────────────────────────────────────
 class _BarcodePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..color = const Color(0xFF0A0A0A);
-
-    // Pattern of bar widths (will repeat to fill width)
     final pattern = [
-      2.0,
-      1.0,
-      3.0,
-      1.0,
-      2.0,
-      1.5,
-      1.0,
-      2.5,
-      1.0,
-      3.0,
-      1.5,
-      1.0,
-      2.0,
-      1.0,
-      2.5,
-      1.0,
-      3.0,
-      1.5,
-      2.0,
-      1.0,
-      1.0,
-      2.0,
-      1.5,
-      3.0,
-      1.0,
-      2.5,
-      1.0,
-      1.5,
-      2.0,
-      1.0
+      2.0, 1.0, 3.0, 1.0, 2.0, 1.5, 1.0, 2.5, 1.0, 3.0,
+      1.5, 1.0, 2.0, 1.0, 2.5, 1.0, 3.0, 1.5, 2.0, 1.0,
+      1.0, 2.0, 1.5, 3.0, 1.0, 2.5, 1.0, 1.5, 2.0, 1.0,
     ];
 
     double x = 0;
     int i = 0;
     while (x < size.width) {
       final barWidth = pattern[i % pattern.length];
-      final gap = 1.5;
+      const gap = 1.5;
 
-      // Draw bar (only every other index for alternating bar/gap)
       if (i % 2 == 0) {
-        // Make sure we don't draw past the right edge
         final drawWidth =
             (x + barWidth > size.width) ? size.width - x : barWidth;
         canvas.drawRect(
