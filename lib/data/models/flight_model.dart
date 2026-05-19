@@ -19,6 +19,8 @@
   final String? terminal;
   final String? gate;
   final String? flightClass;
+  final String departureDate;
+  final String arrivalDate;
 
   const FlightModel({
     required this.id,
@@ -40,6 +42,8 @@
     this.terminal,
     this.gate,
     this.flightClass,
+    this.departureDate = '',
+    this.arrivalDate = '',
   });
 
   factory FlightModel.fromJson(Map<String, dynamic> json) {
@@ -67,6 +71,8 @@
       terminal:       json['terminal'],
       gate:           json['gate'],
       flightClass:    json['class'],
+      departureDate:  json['created_at'] ?? '',
+      arrivalDate:    json['updated_at'] ?? '',
     );
   }
 

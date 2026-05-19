@@ -882,6 +882,20 @@ class _PopularFlightCard extends StatelessWidget {
   final FlightModel flight;
   const _PopularFlightCard({required this.flight});
 
+  String _formatDate(String date) {
+    if (date.isEmpty) return '-';
+    try {
+      final d = DateTime.parse(date);
+      const months = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      ];
+      return '${months[d.month - 1]} ${d.day}, ${d.year}';
+    } catch (_) {
+      return date;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -897,7 +911,7 @@ class _PopularFlightCard extends StatelessWidget {
         ],
       ),
       child: ClipPath(
-        clipper: AppTicketClipper(notchFromBottom: 75),
+        clipper: AppTicketClipper(notchFromBottom: 85),
         child: Container(
           color: Colors.white,
           padding: EdgeInsets.fromLTRB(
@@ -1018,7 +1032,7 @@ class _PopularFlightCard extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: context.h(33)),
+              SizedBox(height: context.h(36)),
               CustomPaint(
                 size: const Size(double.infinity, 1),
                 painter: AppDashedLinePainter(),
@@ -1031,7 +1045,7 @@ class _PopularFlightCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'PRICE',
+                        'DATE',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: context.sp(10),
                           fontWeight: FontWeight.w500,
@@ -1041,11 +1055,11 @@ class _PopularFlightCard extends StatelessWidget {
                       ),
                       SizedBox(height: context.h(3)),
                       Text(
-                        '\$${flight.price.toInt()}',
+                        _formatDate(flight.departureDate),
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: context.sp(14),
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF2563EB),
+                          fontSize: context.sp(12),
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF0A0A0A),
                         ),
                       ),
                     ],
@@ -1054,7 +1068,7 @@ class _PopularFlightCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        'STOPS',
+                        'DATE',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: context.sp(10),
                           fontWeight: FontWeight.w500,
@@ -1064,9 +1078,7 @@ class _PopularFlightCard extends StatelessWidget {
                       ),
                       SizedBox(height: context.h(3)),
                       Text(
-                        flight.stops == 0
-                            ? 'Direct'
-                            : '${flight.stops} stop${flight.stops > 1 ? 's' : ''}',
+                        _formatDate(flight.arrivalDate),
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: context.sp(12),
                           fontWeight: FontWeight.w600,
