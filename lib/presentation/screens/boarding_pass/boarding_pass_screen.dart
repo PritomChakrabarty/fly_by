@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +7,7 @@ import '../../../data/models/flight_model.dart';
 import '../../providers/flight_providers.dart';
 import '../../widgets/app_painters.dart';
 import '../../widgets/common_widgets.dart';
+import '../../../core/utils/responsive.dart';
 
 class BoardingPassScreen extends ConsumerWidget {
   final int? flightId;
@@ -47,7 +48,6 @@ class BoardingPassScreen extends ConsumerWidget {
     );
   }
 
-  // ── HEADER ────────────────────────────────────────────────────────
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -89,7 +89,6 @@ class BoardingPassScreen extends ConsumerWidget {
     );
   }
 
-  // ── FULL BOARDING PASS ────────────────────────────────────────────
   Widget _buildPass(BuildContext context, FlightDetailsModel details) {
     final f = details.flight;
     final passenger =
@@ -114,14 +113,12 @@ class BoardingPassScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(24),
           child: Column(
             children: [
-              // ── TOP SECTION ───────────────────────────────────
               Container(
                 color: Colors.white,
                 padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Airline row + badge
                     Row(
                       children: [
                         Container(
@@ -145,7 +142,7 @@ class BoardingPassScreen extends ConsumerWidget {
                                       child: Text(
                                         f.airlineName.isNotEmpty
                                             ? f.airlineName[0].toUpperCase()
-                                            : '✈',
+                                            : 'âœˆ',
                                         style: GoogleFonts.plusJakartaSans(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w700,
@@ -159,7 +156,7 @@ class BoardingPassScreen extends ConsumerWidget {
                                   child: Text(
                                     f.airlineName.isNotEmpty
                                         ? f.airlineName[0].toUpperCase()
-                                        : '✈',
+                                        : 'âœˆ',
                                     style: GoogleFonts.plusJakartaSans(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700,
@@ -214,11 +211,9 @@ class BoardingPassScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 28),
 
-                    // Route: large airport codes + times
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Departure
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,13 +247,13 @@ class BoardingPassScreen extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        // Center: flight icon + duration
                         Column(
                           children: [
-                            const Icon(
-                              Icons.flight_rounded,
-                              size: 28,
-                              color: Color(0xFF2563EB),
+                            Image.asset(
+                              'assets/icons/flyby_plane_icon.png',
+                              width: context.r(78),
+                              height: context.r(58),
+                              fit: BoxFit.contain,
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -271,7 +266,6 @@ class BoardingPassScreen extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        // Arrival
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
@@ -309,7 +303,6 @@ class BoardingPassScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 24),
 
-                    // Info grid
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -318,7 +311,6 @@ class BoardingPassScreen extends ConsumerWidget {
                       ),
                       child: Column(
                         children: [
-                          // Passenger + Seat
                           Row(
                             children: [
                               Expanded(
@@ -343,7 +335,6 @@ class BoardingPassScreen extends ConsumerWidget {
                           const SizedBox(height: 12),
                           Container(height: 1, color: const Color(0xFFE2E8F0)),
                           const SizedBox(height: 12),
-                          // Class + Terminal + Gate
                           Row(
                             children: [
                               Expanded(
@@ -391,7 +382,6 @@ class BoardingPassScreen extends ConsumerWidget {
                 ),
               ),
 
-              // ── PERFORATED DIVIDER ────────────────────────────
               SizedBox(
                 height: 24,
                 child: Stack(
@@ -402,7 +392,6 @@ class BoardingPassScreen extends ConsumerWidget {
                       size: const Size(double.infinity, 1),
                       painter: AppDashedLinePainter(dashWidth: 6.0, dashGap: 4.0, strokeWidth: 1.5, startPadding: 20),
                     ),
-                    // Half-circle notches on each side
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -428,7 +417,6 @@ class BoardingPassScreen extends ConsumerWidget {
                 ),
               ),
 
-              // ── BOTTOM STUB (barcode section) ─────────────────
               Container(
                 color: Colors.white,
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
@@ -446,7 +434,6 @@ class BoardingPassScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    // Barcode
                     SizedBox(
                       width: double.infinity,
                       height: 80,
@@ -515,5 +502,3 @@ class BoardingPassScreen extends ConsumerWidget {
   }
 }
 
-
-// ─────────────────────────────────────────────────────────────────────

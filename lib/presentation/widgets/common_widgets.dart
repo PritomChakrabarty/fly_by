@@ -1,10 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/exceptions/app_exception.dart';
 
-// ─────────────────────────────────────────────────────────────────────
-// MODAL HANDLE — drag indicator bar for bottom sheets
-// ─────────────────────────────────────────────────────────────────────
 class ModalHandle extends StatelessWidget {
   const ModalHandle({super.key});
 
@@ -23,9 +20,6 @@ class ModalHandle extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// CIRCULAR ICON BUTTON — white circle with shadow, used for back/action
-// ─────────────────────────────────────────────────────────────────────
 class CircularIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
@@ -67,9 +61,6 @@ class CircularIconButton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// INFO CELL — label above value, used in flight details and boarding pass
-// ─────────────────────────────────────────────────────────────────────
 class InfoCell extends StatelessWidget {
   final String label;
   final String value;
@@ -112,9 +103,6 @@ class InfoCell extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// ERROR STATE WIDGET — icon + message + retry button
-// ─────────────────────────────────────────────────────────────────────
 class ErrorStateWidget extends StatelessWidget {
   final Object error;
   final String title;
@@ -187,9 +175,6 @@ class ErrorStateWidget extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// STOPS BADGE — green "Direct" or amber "N stop(s)" pill
-// ─────────────────────────────────────────────────────────────────────
 class StopsBadge extends StatelessWidget {
   final int stops;
   const StopsBadge({super.key, required this.stops});

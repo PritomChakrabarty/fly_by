@@ -1,9 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
-// ─────────────────────────────────────────────────────────────────────
-// DASHED LINE PAINTER
-// Used in flight cards, boarding pass perforations, and detail separators.
-// ─────────────────────────────────────────────────────────────────────
 class AppDashedLinePainter extends CustomPainter {
   final Color color;
   final double dashWidth;
@@ -44,19 +40,14 @@ class AppDashedLinePainter extends CustomPainter {
       oldDelegate.strokeWidth != strokeWidth;
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// TICKET CLIPPER
-// Rounded rect with semicircular notches on both sides.
-// notchFromBottom: distance of the notch centre from the card bottom.
-// ─────────────────────────────────────────────────────────────────────
 class AppTicketClipper extends CustomClipper<Path> {
   final double notchFromBottom;
   const AppTicketClipper({required this.notchFromBottom});
 
   @override
   Path getClip(Size size) {
-    const cornerRadius = 20.0;
-    const notchRadius = 10.0;
+    const cornerRadius = 25.0;
+    const notchRadius = 15.0;
     final notchY = size.height - notchFromBottom;
 
     final path = Path();
@@ -91,10 +82,6 @@ class AppTicketClipper extends CustomClipper<Path> {
       oldClipper.notchFromBottom != notchFromBottom;
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// BARCODE PAINTER
-// Fallback barcode drawn when the API returns no SVG barcode.
-// ─────────────────────────────────────────────────────────────────────
 class AppBarcodePainter extends CustomPainter {
   static const _pattern = [
     2.0, 1.0, 3.0, 1.0, 2.0, 1.5, 1.0, 2.5, 1.0, 3.0,

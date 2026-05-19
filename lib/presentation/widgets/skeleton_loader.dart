@@ -1,9 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../core/utils/responsive.dart';
 
-// ─────────────────────────────────────────────────────────────────────
-// SHIMMER BOX — pulsing placeholder rectangle
-// Each instance owns its own AnimationController (fine for brief loading).
-// ─────────────────────────────────────────────────────────────────────
 class SkeletonBox extends StatefulWidget {
   final double? width;
   final double height;
@@ -61,9 +58,6 @@ class _SkeletonBoxState extends State<SkeletonBox>
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// FLIGHT CARD SKELETON — mirrors _FlightCard layout
-// ─────────────────────────────────────────────────────────────────────
 class FlightCardSkeleton extends StatelessWidget {
   const FlightCardSkeleton({super.key});
 
@@ -85,7 +79,6 @@ class FlightCardSkeleton extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Airline logo + name + stops badge
           Row(
             children: [
               const SkeletonBox(width: 40, height: 40, borderRadius: 20),
@@ -104,7 +97,6 @@ class FlightCardSkeleton extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          // Time row
           Row(
             children: const [
               SkeletonBox(width: 60, height: 14),
@@ -113,7 +105,6 @@ class FlightCardSkeleton extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
-          // Airport codes + duration
           Row(
             children: const [
               SkeletonBox(width: 110, height: 11),
@@ -126,7 +117,6 @@ class FlightCardSkeleton extends StatelessWidget {
           const SizedBox(height: 20),
           Container(height: 1, color: const Color(0xFFE5E7EB)),
           const SizedBox(height: 18),
-          // Price + button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -147,19 +137,16 @@ class FlightCardSkeleton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// POPULAR FLIGHT CARD SKELETON — mirrors _PopularFlightCard layout
-// ─────────────────────────────────────────────────────────────────────
 class PopularFlightSkeleton extends StatelessWidget {
   const PopularFlightSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 300,
+      width: context.w(320),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(context.r(20)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -168,54 +155,51 @@ class PopularFlightSkeleton extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      padding: EdgeInsets.fromLTRB(
+          context.w(16), context.h(14), context.w(16), context.h(16)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.max,
         children: [
-          // Airline name (centered)
-          Center(child: const SkeletonBox(width: 180, height: 15)),
-          const SizedBox(height: 12),
-          // Times
+          Center(child: SkeletonBox(width: context.w(180), height: context.h(15))),
+          SizedBox(height: context.h(12)),
           Row(
-            children: const [
-              SkeletonBox(width: 50, height: 13),
-              Spacer(),
-              SkeletonBox(width: 50, height: 13),
+            children: [
+              SkeletonBox(width: context.w(50), height: context.h(13)),
+              const Spacer(),
+              SkeletonBox(width: context.w(50), height: context.h(13)),
             ],
           ),
-          const SizedBox(height: 6),
-          // Codes + duration
+          SizedBox(height: context.h(6)),
           Row(
-            children: const [
-              SkeletonBox(width: 110, height: 11),
-              Spacer(),
-              SkeletonBox(width: 40, height: 10),
-              Spacer(),
-              SkeletonBox(width: 110, height: 11),
+            children: [
+              SkeletonBox(width: context.w(110), height: context.h(11)),
+              const Spacer(),
+              SkeletonBox(width: context.w(40), height: context.h(10)),
+              const Spacer(),
+              SkeletonBox(width: context.w(110), height: context.h(11)),
             ],
           ),
           const Spacer(),
           Container(height: 1, color: const Color(0xFFE5E7EB)),
-          const SizedBox(height: 14),
-          // Price + stops
+          SizedBox(height: context.h(14)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  SkeletonBox(width: 30, height: 10),
-                  SizedBox(height: 4),
-                  SkeletonBox(width: 55, height: 14),
+                children: [
+                  SkeletonBox(width: context.w(30), height: context.h(10)),
+                  SizedBox(height: context.h(4)),
+                  SkeletonBox(width: context.w(55), height: context.h(14)),
                 ],
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
-                children: const [
-                  SkeletonBox(width: 30, height: 10),
-                  SizedBox(height: 4),
-                  SkeletonBox(width: 55, height: 12),
+                children: [
+                  SkeletonBox(width: context.w(30), height: context.h(10)),
+                  SizedBox(height: context.h(4)),
+                  SkeletonBox(width: context.w(55), height: context.h(12)),
                 ],
               ),
             ],

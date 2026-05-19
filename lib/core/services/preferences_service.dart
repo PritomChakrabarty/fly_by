@@ -1,7 +1,6 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Override this in main.dart after awaiting SharedPreferences.getInstance().
 final sharedPreferencesProvider = Provider<SharedPreferences>((_) {
   throw UnimplementedError('sharedPreferencesProvider must be overridden in main.dart');
 });
@@ -20,6 +19,7 @@ class PreferencesService {
   String get lastFromCity   => _prefs.getString(_keyFromCity) ?? '';
   String get lastTo         => _prefs.getString(_keyTo)       ?? '';
   String get lastToCity     => _prefs.getString(_keyToCity)   ?? '';
+  bool   get hasPassengers  => _prefs.containsKey(_keyPassengers);
   int    get lastPassengers => _prefs.getInt(_keyPassengers)  ?? 1;
 
   Future<void> saveSearch({

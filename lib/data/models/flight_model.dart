@@ -1,7 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────
-// FLIGHT MODEL — Parses API response
-// ─────────────────────────────────────────────────────────────────────
-class FlightModel {
+﻿class FlightModel {
   final int id;
   final String airlineName;
   final String airlineLogo;
@@ -18,7 +15,6 @@ class FlightModel {
   final String aircraftType;
   final int stops;
 
-  // Optional fields (only present in flight details)
   final String? flightId;
   final String? terminal;
   final String? gate;
@@ -74,7 +70,6 @@ class FlightModel {
     );
   }
 
-  // API returns "09:15:00" — convert to "09:15"
   static String _formatTime(String time) {
     if (time.isEmpty) return '';
     final parts = time.split(':');
@@ -85,9 +80,6 @@ class FlightModel {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// PASSENGER MODEL
-// ─────────────────────────────────────────────────────────────────────
 class PassengerModel {
   final int passengerNumber;
   final String title;
@@ -116,9 +108,6 @@ class PassengerModel {
   String get fullName => title.isEmpty ? name : '$title $name';
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// FLIGHT DETAILS MODEL — Flight + Passengers + Booking Info
-// ─────────────────────────────────────────────────────────────────────
 class FlightDetailsModel {
   final FlightModel flight;
   final List<PassengerModel> passengers;
@@ -151,9 +140,6 @@ class FlightDetailsModel {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// PAGINATION MODEL
-// ─────────────────────────────────────────────────────────────────────
 class PaginationModel {
   final int total;
   final int totalPages;
@@ -183,9 +169,6 @@ class PaginationModel {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// SEARCH RESPONSE — Flights list + pagination
-// ─────────────────────────────────────────────────────────────────────
 class FlightSearchResponse {
   final List<FlightModel> flights;
   final PaginationModel pagination;

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -10,10 +10,8 @@ import '../../widgets/skeleton_loader.dart';
 import '../../widgets/offline_banner.dart';
 import '../../widgets/app_painters.dart';
 import '../../widgets/common_widgets.dart';
+import '../../../core/utils/responsive.dart';
 
-// ─────────────────────────────────────────────────────────────────────
-// SORT OPTIONS
-// ─────────────────────────────────────────────────────────────────────
 const List<Map<String, String>> _sortOptions = [
   {'label': 'Lowest Price', 'sort': 'price_asc'},
   {'label': 'Highest Price', 'sort': 'price_desc'},
@@ -21,9 +19,6 @@ const List<Map<String, String>> _sortOptions = [
   {'label': 'Earliest', 'sort': 'departure_asc'},
 ];
 
-// ─────────────────────────────────────────────────────────────────────
-// FLIGHT RESULT SCREEN
-// ─────────────────────────────────────────────────────────────────────
 class FlightResultScreen extends ConsumerStatefulWidget {
   const FlightResultScreen({super.key});
 
@@ -118,7 +113,6 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
     final params = ref.watch(searchParamsProvider);
     final flightsAsync = ref.watch(flightSearchProvider);
 
-    // Reset accumulated list when a new page-1 result arrives
     ref.listen(flightSearchProvider, (_, next) {
       next.whenData((response) {
         setState(() {
@@ -148,7 +142,6 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
                     loading: () => _buildSkeletonList(),
                     error: (err, _) => _buildErrorState(err),
                     data: (page1) {
-                      // Fall back to page-1 data if listener hasn't fired yet
                       final display =
                           _allFlights.isNotEmpty ? _allFlights : page1.flights;
                       if (display.isEmpty) return _buildEmptyState();
@@ -186,7 +179,6 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
                 ),
               ],
             ),
-            // Filter FAB with badge
             Positioned(
               bottom: 24,
               right: 24,
@@ -254,7 +246,6 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
     );
   }
 
-  // ── HEADER ────────────────────────────────────────────────────────
   Widget _buildHeader(BuildContext context, FlightSearchParams params) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -279,7 +270,6 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
           CircularIconButton(
             icon: Icons.more_vert_rounded,
             onTap: () {
-              // Optional: show a popup menu later
             },
           ),
         ],
@@ -287,7 +277,6 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
     );
   }
 
-  // ── SORT CHIPS ────────────────────────────────────────────────────
   Widget _buildSortChips(WidgetRef ref, FlightSearchParams params) {
     return SizedBox(
       height: 42,
@@ -337,7 +326,6 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
     );
   }
 
-  // ── SKELETON LIST ─────────────────────────────────────────────────
   Widget _buildSkeletonList() {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
@@ -356,7 +344,6 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
         onRetry: () => ref.invalidate(flightSearchProvider),
       );
 
-  // ── EMPTY STATE ───────────────────────────────────────────────────
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
@@ -418,9 +405,6 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// FILTER SHEET
-// ─────────────────────────────────────────────────────────────────────
 class _FilterSheet extends ConsumerStatefulWidget {
   const _FilterSheet();
 
@@ -525,7 +509,6 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                   controller: scrollCtrl,
                   padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                   children: [
-                    // ── AIRLINE ──────────────────────────────────────
                     _sectionLabel('Airline'),
                     const SizedBox(height: 10),
                     airlinesAsync.when(
@@ -555,7 +538,6 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                     ),
                     const SizedBox(height: 24),
 
-                    // ── PRICE RANGE ───────────────────────────────────
                     _sectionLabel('Price Range'),
                     const SizedBox(height: 6),
                     Row(
@@ -603,7 +585,6 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                     ),
                     const SizedBox(height: 24),
 
-                    // ── STOPS ─────────────────────────────────────────
                     _sectionLabel('Stops'),
                     const SizedBox(height: 10),
                     Wrap(
@@ -630,7 +611,6 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                     ),
                     const SizedBox(height: 24),
 
-                    // ── AIRCRAFT TYPE ─────────────────────────────────
                     _sectionLabel('Aircraft Type'),
                     const SizedBox(height: 10),
                     aircraftAsync.when(
@@ -664,7 +644,6 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                 ),
               ),
 
-              // Apply button
               Padding(
                 padding: EdgeInsets.fromLTRB(
                   24,
@@ -714,9 +693,6 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// CHIP WIDGET
-// ─────────────────────────────────────────────────────────────────────
 class _Chip extends StatelessWidget {
   final String label;
   final bool active;
@@ -748,14 +724,10 @@ class _Chip extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// FLIGHT CARD
-// ─────────────────────────────────────────────────────────────────────
 class _FlightCard extends StatelessWidget {
   final FlightModel flight;
   const _FlightCard({required this.flight});
 
-  // Extract 2-char IATA code from flight number (e.g. "SG801" → "SG")
   String get _iata => flight.flightNumber.length >= 2
       ? flight.flightNumber.substring(0, 2)
       : '';
@@ -764,7 +736,7 @@ class _FlightCard extends StatelessWidget {
         child: Text(
           flight.airlineName.isNotEmpty
               ? flight.airlineName[0].toUpperCase()
-              : '✈',
+              : 'âœˆ',
           style: GoogleFonts.plusJakartaSans(
             fontSize: 13,
             fontWeight: FontWeight.w700,
@@ -812,7 +784,6 @@ class _FlightCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Airline header — logo + name + flight number
               Row(
                 children: [
                   Container(
@@ -869,120 +840,111 @@ class _FlightCard extends StatelessWidget {
                   StopsBadge(stops: flight.stops),
                 ],
               ),
-              const SizedBox(height: 18),
-              // Departure → Arrival times
+              const SizedBox(height: 10),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    flight.departureTime,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF2563EB),
-                    ),
-                  ),
-                  Expanded(
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: CustomPaint(
-                            size: const Size(double.infinity, 1),
-                            painter: AppDashedLinePainter(),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          color: Colors.white,
-                          child: const Icon(
-                            Icons.flight_rounded,
-                            size: 18,
-                            color: Color(0xFF2563EB),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    flight.arrivalTime,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF2563EB),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              // Airport codes + duration
-              Row(
-                children: [
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: flight.departureCode,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFF0A0A0A),
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' (${flight.departureCity})',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xFF6B7280),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        flight.duration,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        flight.departureTime,
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF9CA3AF),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF2563EB),
                         ),
                       ),
-                    ),
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: flight.arrivalCode,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFF0A0A0A),
-                          ),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: flight.departureCode,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF0A0A0A),
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' (${flight.departureCity})',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w400,
+                                color: const Color(0xFF6B7280),
+                              ),
+                            ),
+                          ],
                         ),
-                        TextSpan(
-                          text: ' (${flight.arrivalCity})',
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          'assets/icons/flyby_plane_icon.png',
+                          width: context.r(58),
+                          height: context.r(58),
+                          fit: BoxFit.contain,
+                        ),
+                        Text(
+                          flight.duration,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 11,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xFF6B7280),
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF9CA3AF),
                           ),
                         ),
                       ],
                     ),
                   ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        flight.arrivalTime,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF2563EB),
+                        ),
+                      ),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: flight.arrivalCode,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF0A0A0A),
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' (${flight.arrivalCity})',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w400,
+                                color: const Color(0xFF6B7280),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 25),
               CustomPaint(
                 size: const Size(double.infinity, 1),
                 painter: AppDashedLinePainter(),
               ),
               const SizedBox(height: 18),
-              // Price + Select button
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,

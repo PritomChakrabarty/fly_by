@@ -1,4 +1,4 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
+﻿import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ConnectivityService {
@@ -17,7 +17,6 @@ final connectivityServiceProvider = Provider<ConnectivityService>(
   (_) => ConnectivityService(),
 );
 
-/// Emits the initial connectivity state immediately, then updates on change.
 final isConnectedProvider = StreamProvider<bool>((ref) async* {
   final service = ref.read(connectivityServiceProvider);
   yield await service.isConnected;

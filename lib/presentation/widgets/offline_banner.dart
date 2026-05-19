@@ -1,10 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/services/connectivity_service.dart';
 
-/// Shows a red banner when the device has no network connectivity.
-/// Renders nothing when online or while connectivity is being determined.
 class OfflineBanner extends ConsumerWidget {
   const OfflineBanner({super.key});
 

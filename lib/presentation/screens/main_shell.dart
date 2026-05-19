@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/navigation_provider.dart';
 import 'home/home_screen.dart';
@@ -19,8 +19,8 @@ class MainShell extends ConsumerWidget {
 
     return Scaffold(
       body: screens[currentIndex],
-      // Replace the bottomNavigationBar in MainShell with this:
       bottomNavigationBar: Container(
+        height: 60,
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
@@ -38,11 +38,10 @@ class MainShell extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavIcon(Icons.home_rounded, 0, currentIndex, ref),
-                _buildNavIcon(Icons.flight_rounded, 1, currentIndex, ref),
-                _buildNavIcon(Icons.map_outlined, 2, currentIndex, ref),
-                _buildNavIcon(
-                    Icons.person_outline_rounded, 3, currentIndex, ref),
+                _buildNavIcon(context, Icons.home_rounded, 0, currentIndex, ref),
+                _buildNavIcon(context, Icons.flight_rounded, 1, currentIndex, ref),
+                _buildNavIcon(context, Icons.map_outlined, 2, currentIndex, ref),
+                _buildNavIcon(context, Icons.person_outline_rounded, 3, currentIndex, ref),
               ],
             ),
           ),
@@ -51,31 +50,31 @@ class MainShell extends ConsumerWidget {
     );
   }
 
-  Widget _buildNavIcon(IconData icon, int index, int currentIndex, WidgetRef ref) {
-  final isActive = index == currentIndex;
-  
-  Widget iconWidget = Icon(
-    icon,
-    size: 26,
-    color: isActive ? const Color(0xFF2563EB) : const Color(0xFF9CA3AF),
-  );
-  
-  if (index == 1) {
-    iconWidget = Transform.rotate(
-      angle: 1.55,
-      child: iconWidget,
+  Widget _buildNavIcon(BuildContext context, IconData icon, int index, int currentIndex, WidgetRef ref) {
+    final isActive = index == currentIndex;
+
+    Widget iconWidget = Icon(
+      icon,
+      size: 26,
+      color: isActive ? const Color(0xFF2563EB) : const Color(0xFF9CA3AF),
+    );
+
+    if (index == 1) {
+      iconWidget = Transform.rotate(
+        angle: 1.55,
+        child: iconWidget,
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => ref.read(bottomNavIndexProvider.notifier).state = index,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: iconWidget,
+      ),
     );
   }
-  
-  return GestureDetector(
-    onTap: () => ref.read(bottomNavIndexProvider.notifier).state = index,
-    behavior: HitTestBehavior.opaque,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: iconWidget,
-    ),
-  );
-}
 }
 
 class _BottomNavBar extends ConsumerWidget {
@@ -91,7 +90,7 @@ class _BottomNavBar extends ConsumerWidget {
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [

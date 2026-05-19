@@ -1,11 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/flight_model.dart';
 import '../../data/repositories/flight_repository.dart';
 import '../../core/services/preferences_service.dart';
 
-// ─────────────────────────────────────────────────────────────────────
-// SEARCH PARAMETERS
-// ─────────────────────────────────────────────────────────────────────
 class FlightSearchParams {
   final String from;
   final String fromCity;
@@ -15,7 +12,6 @@ class FlightSearchParams {
   final String sortBy;
   final String date;
 
-  // Advanced filters
   final String filterAirline;
   final double filterPriceMin;
   final double filterPriceMax;
@@ -116,23 +112,18 @@ class FlightSearchParams {
       filterAircraftType.hashCode;
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// 1. SEARCH PARAMS — initialised from saved preferences
-// ─────────────────────────────────────────────────────────────────────
 final searchParamsProvider = StateProvider<FlightSearchParams>((ref) {
   final p = ref.watch(preferencesServiceProvider);
   return FlightSearchParams(
-    from: p.lastFrom,
-    fromCity: p.lastFromCity,
-    to: p.lastTo,
-    toCity: p.lastToCity,
-    passengers: p.lastPassengers,
+    from:       p.lastFrom.isNotEmpty       ? p.lastFrom       : 'CGK',
+    fromCity:   p.lastFromCity.isNotEmpty   ? p.lastFromCity   : 'Jakarta',
+    to:         p.lastTo.isNotEmpty         ? p.lastTo         : 'NRT',
+    toCity:     p.lastToCity.isNotEmpty     ? p.lastToCity     : 'Tokyo',
+    passengers: p.hasPassengers             ? p.lastPassengers : 3,
+    date:       '2024-04-02',
   );
 });
 
-// ─────────────────────────────────────────────────────────────────────
-// 2. FLIGHT SEARCH RESULTS — page 1, driven by search params
-// ─────────────────────────────────────────────────────────────────────
 final flightSearchProvider =
     FutureProvider.autoDispose<FlightSearchResponse>((ref) async {
   final params = ref.watch(searchParamsProvider);
@@ -152,9 +143,6 @@ final flightSearchProvider =
   );
 });
 
-// ─────────────────────────────────────────────────────────────────────
-// 3. POPULAR FLIGHTS — cached home-screen showcase (CGK → NRT)
-// ─────────────────────────────────────────────────────────────────────
 final popularFlightsProvider =
     FutureProvider<FlightSearchResponse>((ref) async {
   final repo = ref.watch(flightRepositoryProvider);
@@ -167,9 +155,6 @@ final popularFlightsProvider =
   );
 });
 
-// ─────────────────────────────────────────────────────────────────────
-// 4. FLIGHT DETAILS
-// ─────────────────────────────────────────────────────────────────────
 final flightDetailsProvider =
     FutureProvider.autoDispose.family<FlightDetailsModel, int>(
   (ref, flightId) async {
@@ -178,9 +163,6 @@ final flightDetailsProvider =
   },
 );
 
-// ─────────────────────────────────────────────────────────────────────
-// 5. AIRPORTS
-// ─────────────────────────────────────────────────────────────────────
 final departureAirportsProvider =
     FutureProvider<List<AirportModel>>((ref) async {
   return ref.watch(flightRepositoryProvider).getDepartureAirports();
@@ -191,9 +173,6 @@ final arrivalAirportsProvider =
   return ref.watch(flightRepositoryProvider).getArrivalAirports();
 });
 
-// ─────────────────────────────────────────────────────────────────────
-// 6. AIRLINES & AIRCRAFT — for filter dropdowns
-// ─────────────────────────────────────────────────────────────────────
 final airlinesProvider = FutureProvider<List<String>>((ref) async {
   return ref.watch(flightRepositoryProvider).getAirlines();
 });

@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/flight_model.dart';
 import '../services/api_service.dart';
@@ -8,9 +8,6 @@ class FlightRepository {
   final ApiService _api;
   FlightRepository(this._api);
 
-  // ─────────────────────────────────────────────────────────────────
-  // 1. SEARCH FLIGHTS
-  // ─────────────────────────────────────────────────────────────────
   Future<FlightSearchResponse> searchFlights({
     String from = '',
     String to = '',
@@ -52,9 +49,6 @@ class FlightRepository {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────
-  // 2. GET FLIGHT DETAILS BY ID
-  // ─────────────────────────────────────────────────────────────────
   Future<FlightDetailsModel> getFlightDetails(int id) async {
     try {
       final response = await _api.post('/flight', body: {'id': id});
@@ -68,9 +62,6 @@ class FlightRepository {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────
-  // 3. GET DEPARTURE AIRPORTS
-  // ─────────────────────────────────────────────────────────────────
   Future<List<AirportModel>> getDepartureAirports({
     String search = '',
     int page = 1,
@@ -93,9 +84,6 @@ class FlightRepository {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────
-  // 4. GET ARRIVAL AIRPORTS
-  // ─────────────────────────────────────────────────────────────────
   Future<List<AirportModel>> getArrivalAirports({
     String search = '',
     int page = 1,
@@ -118,9 +106,6 @@ class FlightRepository {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────
-  // 5. GET AIRLINES
-  // ─────────────────────────────────────────────────────────────────
   Future<List<String>> getAirlines({
     String search = '',
     int page = 1,
@@ -144,9 +129,6 @@ class FlightRepository {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────
-  // 6. GET AIRCRAFT TYPES
-  // ─────────────────────────────────────────────────────────────────
   Future<List<String>> getAircraftTypes({
     String search = '',
     int page = 1,
@@ -171,9 +153,6 @@ class FlightRepository {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// AIRPORT MODEL
-// ─────────────────────────────────────────────────────────────────────
 class AirportModel {
   final String airportCode;
   final String city;

@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+﻿import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/exceptions/app_exception.dart';
@@ -20,10 +20,8 @@ class ApiService {
       ),
     );
 
-    // Retry on network/timeout errors before propagating.
     _dio.interceptors.add(_RetryInterceptor(_dio));
 
-    // Request/response logging — debug builds only.
     if (kDebugMode) {
       _dio.interceptors.add(LogInterceptor(
         requestBody: true,
@@ -68,11 +66,6 @@ class ApiService {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// RETRY INTERCEPTOR
-// Retries network/timeout errors up to 3 times with exponential backoff
-// (1 s, 2 s, 4 s). Server errors (4xx/5xx) are NOT retried.
-// ─────────────────────────────────────────────────────────────────────
 class _RetryInterceptor extends Interceptor {
   final Dio _dio;
   static const int _maxRetries = 3;
@@ -100,7 +93,6 @@ class _RetryInterceptor extends Interceptor {
         '[Retry] Attempt ${retryCount + 1}/$_maxRetries '
         'for ${err.requestOptions.path}');
 
-    // Exponential backoff: 1s → 2s → 4s
     await Future.delayed(Duration(seconds: 1 << retryCount));
 
     try {

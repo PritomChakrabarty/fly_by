@@ -1,4 +1,4 @@
-abstract class AppException implements Exception {
+﻿abstract class AppException implements Exception {
   final String message;
   const AppException(this.message);
 

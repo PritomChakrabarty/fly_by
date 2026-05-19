@@ -1,10 +1,11 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/preferences_service.dart';
+import '../../../core/utils/responsive.dart';
 import '../../../data/models/flight_model.dart';
 import '../../../data/repositories/flight_repository.dart';
 import '../../providers/flight_providers.dart';
@@ -13,9 +14,6 @@ import '../../widgets/offline_banner.dart';
 import '../../widgets/app_painters.dart';
 import '../../widgets/common_widgets.dart';
 
-// ─────────────────────────────────────────────────────────────────────
-// HOME SCREEN
-// ─────────────────────────────────────────────────────────────────────
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -25,7 +23,6 @@ class HomeScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFF1F5F9),
       body: Stack(
         children: [
-          // Gradient pinned to full screen — never leaves a gap on any device
           const SizedBox.expand(
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -44,7 +41,6 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
           ),
-          // Content layer — scrollable so it never overflows on any screen size
           SafeArea(
             bottom: false,
             child: SingleChildScrollView(
@@ -54,20 +50,20 @@ class HomeScreen extends ConsumerWidget {
                 children: [
                   const OfflineBanner(),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                    padding: EdgeInsets.fromLTRB(
+                        context.w(24), context.h(16), context.w(24), 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 18),
                         const _TopBar(),
-                        const SizedBox(height: 28),
+                        SizedBox(height: context.h(22)),
                         const _SearchCard(),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  SizedBox(height: context.h(18)),
                   const _PopularFlightsSection(),
-                  const SizedBox(height: 32),
+                  SizedBox(height: context.h(32)),
                 ],
               ),
             ),
@@ -78,9 +74,6 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// TOP BAR
-// ─────────────────────────────────────────────────────────────────────
 class _TopBar extends StatelessWidget {
   const _TopBar();
 
@@ -92,21 +85,21 @@ class _TopBar extends StatelessWidget {
         Text(
           'Plan your trip',
           style: GoogleFonts.plusJakartaSans(
-            fontSize: 28,
+            fontSize: context.sp(28),
             fontWeight: FontWeight.w700,
             color: Colors.white,
             height: 1.1,
           ),
         ),
         Container(
-          width: 48,
-          height: 48,
+          width: context.w(48),
+          height: context.w(48),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(color: Colors.white, width: 2.5),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha:0.12),
+                color: Colors.black.withValues(alpha: 0.12),
                 blurRadius: 10,
               ),
             ],
@@ -127,9 +120,6 @@ class _TopBar extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// SEARCH CARD — fully interactive, reads/writes searchParamsProvider
-// ─────────────────────────────────────────────────────────────────────
 class _SearchCard extends ConsumerStatefulWidget {
   const _SearchCard();
 
@@ -140,7 +130,6 @@ class _SearchCard extends ConsumerStatefulWidget {
 class _SearchCardState extends ConsumerState<_SearchCard> {
   bool _showErrors = false;
 
-  // ── Airport picker ───────────────────────────────────────────────
   Future<void> _pickFromAirport() async {
     final result = await showModalBottomSheet<AirportModel>(
       context: context,
@@ -171,7 +160,6 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
         );
   }
 
-  // ── Date picker ──────────────────────────────────────────────────
   Future<void> _pickDate() async {
     final params = ref.read(searchParamsProvider);
     var initial = DateTime.now().add(const Duration(days: 1));
@@ -180,7 +168,6 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
         initial = DateTime.parse(params.date);
       } catch (_) {}
     }
-
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -200,34 +187,36 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
         ref.read(searchParamsProvider).copyWith(date: formatted);
   }
 
-  // ── Passenger picker ─────────────────────────────────────────────
   Future<void> _pickPassengers() async {
     int count = ref.read(searchParamsProvider).passengers;
+    final outerCtx = context;
 
     await showModalBottomSheet(
-      context: context,
+      context: outerCtx,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setModalState) => Container(
-          decoration: const BoxDecoration(
+      builder: (modalCtx) => StatefulBuilder(
+        builder: (modalCtx, setModalState) => Container(
+          decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius:
+                BorderRadius.vertical(top: Radius.circular(outerCtx.r(24))),
           ),
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+          padding: EdgeInsets.fromLTRB(
+              outerCtx.w(24), outerCtx.h(12), outerCtx.w(24), outerCtx.h(32)),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const ModalHandle(),
-              const SizedBox(height: 20),
+              SizedBox(height: outerCtx.h(20)),
               Text(
                 'Number of Passengers',
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 17,
+                  fontSize: outerCtx.sp(17),
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF0A0A0A),
                 ),
               ),
-              const SizedBox(height: 28),
+              SizedBox(height: outerCtx.h(28)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -238,11 +227,12 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                     },
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 36),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: outerCtx.w(36)),
                     child: Text(
                       '$count',
                       style: GoogleFonts.plusJakartaSans(
-                        fontSize: 40,
+                        fontSize: outerCtx.sp(40),
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0A0A0A),
                       ),
@@ -256,28 +246,28 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: outerCtx.h(32)),
               SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: outerCtx.h(52),
                 child: ElevatedButton(
                   onPressed: () {
                     ref.read(searchParamsProvider.notifier).state =
                         ref.read(searchParamsProvider).copyWith(passengers: count);
-                    Navigator.pop(ctx);
+                    Navigator.pop(modalCtx);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0A0A0A),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: BorderRadius.circular(outerCtx.r(28)),
                     ),
                   ),
                   child: Text(
                     'Confirm',
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 15,
+                      fontSize: outerCtx.sp(15),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -294,19 +284,18 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 44,
-        height: 44,
+        width: context.w(44),
+        height: context.w(44),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
           color: Colors.white,
         ),
-        child: Icon(icon, size: 20, color: const Color(0xFF0A0A0A)),
+        child: Icon(icon, size: context.r(20), color: const Color(0xFF0A0A0A)),
       ),
     );
   }
 
-  // ── Swap airports ────────────────────────────────────────────────
   void _swapAirports() {
     final p = ref.read(searchParamsProvider);
     ref.read(searchParamsProvider.notifier).state = p.copyWith(
@@ -317,7 +306,6 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
     );
   }
 
-  // ── Date formatter ───────────────────────────────────────────────
   String _formatDate(String date) {
     if (date.isEmpty) return 'Select date';
     try {
@@ -351,30 +339,30 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
     final dateText = _formatDate(params.date);
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(context.r(24)),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha:0.75),
-            borderRadius: BorderRadius.circular(24),
+            color: Colors.white.withValues(alpha: 0.75),
+            borderRadius: BorderRadius.circular(context.r(24)),
             border: Border.all(
-              color: Colors.white.withValues(alpha:0.55),
+              color: Colors.white.withValues(alpha: 0.55),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha:0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 24,
                 offset: const Offset(0, 10),
               ),
             ],
           ),
-          padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+          padding: EdgeInsets.fromLTRB(
+              context.w(20), context.h(22), context.w(20), context.h(22)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── FROM / TO ────────────────────────────────────────
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -382,7 +370,6 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // FROM
                         GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: _pickFromAirport,
@@ -390,11 +377,13 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _label('From'),
-                              const SizedBox(height: 16),
+                              SizedBox(height: context.h(10)),
                               Text(
-                                fromEmpty ? 'Select departure airport' : fromDisplay,
+                                fromEmpty
+                                    ? 'Select departure airport'
+                                    : fromDisplay,
                                 style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 17,
+                                  fontSize: context.sp(17),
                                   fontWeight: FontWeight.w600,
                                   color: fromEmpty
                                       ? const Color(0xFF9CA3AF)
@@ -402,11 +391,11 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                                 ),
                               ),
                               if (_showErrors && fromEmpty) ...[
-                                const SizedBox(height: 4),
+                                SizedBox(height: context.h(4)),
                                 Text(
                                   'Please select a departure airport',
                                   style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 11,
+                                    fontSize: context.sp(11),
                                     color: const Color(0xFFEF4444),
                                   ),
                                 ),
@@ -414,10 +403,9 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        SizedBox(height: context.h(14)),
                         Container(height: 1, color: const Color(0xFFD1D5DB)),
-                        const SizedBox(height: 14),
-                        // TO
+                        SizedBox(height: context.h(14)),
                         GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: _pickToAirport,
@@ -425,11 +413,13 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _label('To'),
-                              const SizedBox(height: 16),
+                              SizedBox(height: context.h(10)),
                               Text(
-                                toEmpty ? 'Select arrival airport' : toDisplay,
+                                toEmpty
+                                    ? 'Select arrival airport'
+                                    : toDisplay,
                                 style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 17,
+                                  fontSize: context.sp(17),
                                   fontWeight: FontWeight.w600,
                                   color: toEmpty
                                       ? const Color(0xFF9CA3AF)
@@ -437,11 +427,11 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                                 ),
                               ),
                               if (_showErrors && toEmpty) ...[
-                                const SizedBox(height: 4),
+                                SizedBox(height: context.h(4)),
                                 Text(
                                   'Please select an arrival airport',
                                   style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 11,
+                                    fontSize: context.sp(11),
                                     color: const Color(0xFFEF4444),
                                   ),
                                 ),
@@ -452,13 +442,12 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  // Swap button
+                  SizedBox(width: context.w(12)),
                   GestureDetector(
                     onTap: _swapAirports,
                     child: Container(
-                      width: 42,
-                      height: 42,
+                      width: context.w(42),
+                      height: context.w(42),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white,
@@ -466,25 +455,24 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                             color: const Color(0xFFE5E7EB), width: 1.5),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha:0.06),
+                            color: Colors.black.withValues(alpha: 0.06),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.swap_vert_rounded,
-                        size: 22,
-                        color: Color(0xFF0A0A0A),
+                        size: context.r(22),
+                        color: const Color(0xFF0A0A0A),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: context.h(16)),
               Container(height: 1, color: const Color(0xFFD1D5DB)),
-              const SizedBox(height: 16),
-              // ── DEPARTURE & AMOUNT ───────────────────────────────
+              SizedBox(height: context.h(16)),
               Row(
                 children: [
                   Expanded(
@@ -495,14 +483,14 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _label('Departure'),
-                          const SizedBox(height: 16),
+                          SizedBox(height: context.h(10)),
                           Row(
                             children: [
                               Flexible(
                                 child: Text(
                                   dateText,
                                   style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 15,
+                                    fontSize: context.sp(15),
                                     fontWeight: FontWeight.w600,
                                     color: dateEmpty
                                         ? const Color(0xFF9CA3AF)
@@ -510,31 +498,31 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              const Icon(
+                              SizedBox(width: context.w(10)),
+                              Icon(
                                 Icons.calendar_today_outlined,
-                                size: 15,
-                                color: Color(0xFF9CA3AF),
+                                size: context.r(18),
+                                color: const Color(0xFF9CA3AF),
                               ),
                             ],
                           ),
                           if (_showErrors && dateEmpty) ...[
-                            const SizedBox(height: 4),
+                            SizedBox(height: context.h(4)),
                             Text(
                               'Please select a departure date',
                               style: GoogleFonts.plusJakartaSans(
-                                fontSize: 11,
+                                fontSize: context.sp(11),
                                 color: const Color(0xFFEF4444),
                               ),
                             ),
                           ],
-                          const SizedBox(height: 12),
+                          SizedBox(height: context.h(15)),
                           Container(height: 1, color: const Color(0xFFD1D5DB)),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: context.w(16)),
                   Expanded(
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
@@ -542,27 +530,27 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _label('Travellers'),
-                          const SizedBox(height: 16),
+                          _label('Amount'),
+                          SizedBox(height: context.h(8)),
                           Row(
                             children: [
                               Text(
                                 passengerText,
                                 style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 15,
+                                  fontSize: context.sp(15),
                                   fontWeight: FontWeight.w600,
                                   color: const Color(0xFF0A0A0A),
                                 ),
                               ),
-                              const SizedBox(width: 4),
-                              const Icon(
+                              SizedBox(width: context.w(4)),
+                              Icon(
                                 Icons.keyboard_arrow_down_rounded,
-                                size: 22,
-                                color: Color(0xFF374151),
+                                size: context.r(22),
+                                color: const Color(0xFF374151),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: context.h(16)),
                           Container(height: 1, color: const Color(0xFFD1D5DB)),
                         ],
                       ),
@@ -570,11 +558,10 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              // ── SEARCH BUTTON ────────────────────────────────────
+              SizedBox(height: context.h(18)),
               SizedBox(
                 width: double.infinity,
-                height: 54,
+                height: context.h(54),
                 child: ElevatedButton(
                   onPressed: () async {
                     if (fromEmpty || toEmpty || dateEmpty) {
@@ -597,13 +584,13 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(32),
+                      borderRadius: BorderRadius.circular(context.r(32)),
                     ),
                   ),
                   child: Text(
                     'Search flights',
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
+                      fontSize: context.sp(16),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -619,7 +606,7 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
   Widget _label(String text) => Text(
         text,
         style: GoogleFonts.plusJakartaSans(
-          fontSize: 11,
+          fontSize: context.sp(11),
           fontWeight: FontWeight.w400,
           color: const Color(0xFF9CA3AF),
           letterSpacing: 0.2,
@@ -627,11 +614,8 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
       );
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// AIRPORT SEARCH BOTTOM SHEET
-// ─────────────────────────────────────────────────────────────────────
 class _AirportSheet extends ConsumerStatefulWidget {
-  final String type; // 'from' | 'to'
+  final String type;
   const _AirportSheet({required this.type});
 
   @override
@@ -672,8 +656,7 @@ class _AirportSheetState extends ConsumerState<_AirportSheet> {
 
   void _onSearchChanged(String query) {
     _debounce?.cancel();
-    _debounce =
-        Timer(const Duration(milliseconds: 400), () => _fetch(query));
+    _debounce = Timer(const Duration(milliseconds: 400), () => _fetch(query));
   }
 
   @override
@@ -684,66 +667,65 @@ class _AirportSheetState extends ConsumerState<_AirportSheet> {
       maxChildSize: 0.95,
       expand: false,
       builder: (_, scrollController) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(context.r(24))),
         ),
         child: Column(
           children: [
-            // Handle
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: ModalHandle(),
-            ),
-            // Title
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              padding: EdgeInsets.symmetric(vertical: context.h(12)),
+              child: const ModalHandle(),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                  context.w(20), 0, context.w(20), context.h(12)),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   widget.type == 'from' ? 'From where?' : 'Where to?',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 18,
+                    fontSize: context.sp(18),
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF0A0A0A),
                   ),
                 ),
               ),
             ),
-            // Search field
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              padding: EdgeInsets.fromLTRB(
+                  context.w(20), 0, context.w(20), context.h(8)),
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFFF8F9FA),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(context.r(12)),
                   border: Border.all(color: const Color(0xFFE5E7EB)),
                 ),
                 child: TextField(
                   controller: _controller,
                   onChanged: _onSearchChanged,
                   autofocus: true,
-                  style: GoogleFonts.plusJakartaSans(fontSize: 14),
+                  style: GoogleFonts.plusJakartaSans(fontSize: context.sp(14)),
                   decoration: InputDecoration(
                     hintText: 'Search airports...',
                     hintStyle: GoogleFonts.plusJakartaSans(
                       color: const Color(0xFF9CA3AF),
-                      fontSize: 14,
+                      fontSize: context.sp(14),
                     ),
                     prefixIcon: const Icon(
                       Icons.search_rounded,
                       color: Color(0xFF9CA3AF),
                     ),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: context.w(16),
+                      vertical: context.h(14),
                     ),
                   ),
                 ),
               ),
             ),
-            // List
             Expanded(
               child: _loading
                   ? const Center(
@@ -762,33 +744,35 @@ class _AirportSheetState extends ConsumerState<_AirportSheet> {
                         )
                       : ListView.builder(
                           controller: scrollController,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: context.w(12)),
                           itemCount: _airports.length,
                           itemBuilder: (_, i) {
                             final airport = _airports[i];
                             return ListTile(
-                              onTap: () =>
-                                  Navigator.of(context).pop(airport),
+                              onTap: () => Navigator.of(context).pop(airport),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius:
+                                    BorderRadius.circular(context.r(12)),
                               ),
                               leading: Container(
-                                width: 40,
-                                height: 40,
+                                width: context.w(40),
+                                height: context.w(40),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFEFF6FF),
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius:
+                                      BorderRadius.circular(context.r(10)),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.flight_takeoff_rounded,
-                                  size: 20,
-                                  color: Color(0xFF2563EB),
+                                  size: context.r(20),
+                                  color: const Color(0xFF2563EB),
                                 ),
                               ),
                               title: Text(
                                 airport.city,
                                 style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 15,
+                                  fontSize: context.sp(15),
                                   fontWeight: FontWeight.w600,
                                   color: const Color(0xFF0A0A0A),
                                 ),
@@ -796,14 +780,14 @@ class _AirportSheetState extends ConsumerState<_AirportSheet> {
                               subtitle: Text(
                                 airport.airportCode,
                                 style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 12,
+                                  fontSize: context.sp(12),
                                   color: const Color(0xFF9CA3AF),
                                 ),
                               ),
                               trailing: Text(
                                 '${airport.flightCount} flights',
                                 style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 11,
+                                  fontSize: context.sp(11),
                                   color: const Color(0xFF6B7280),
                                 ),
                               ),
@@ -818,48 +802,26 @@ class _AirportSheetState extends ConsumerState<_AirportSheet> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// POPULAR FLIGHTS SECTION
-// ─────────────────────────────────────────────────────────────────────
 class _PopularFlightsSection extends ConsumerWidget {
   const _PopularFlightsSection();
-
-  // Compute the card list height to fill remaining screen space.
-  // Subtracts the status bar, bottom nav bar, and all fixed widgets above
-  // the list from the total screen height, then clamps to a safe range.
-  double _listHeight(BuildContext context) {
-    final mq = MediaQuery.of(context);
-    // Fixed heights above the card list (padding + TopBar + SearchCard + gaps + header)
-    const fixedAbove = 16.0   // padding top in Padding widget
-        + 48.0                // _TopBar (avatar height)
-        + 28.0                // SizedBox between TopBar and SearchCard
-        + 312.0               // _SearchCard approximate height
-        + 28.0                // SizedBox between SearchCard and section
-        + 26.0                // section header row
-        + 14.0;               // SizedBox between header and list
-    // Fixed heights below (bottom spacing + app bottom nav bar ~56dp + system nav ~48dp)
-    const fixedBelow = 32.0 + 104.0;
-    final computed = mq.size.height - mq.padding.top - fixedAbove - fixedBelow;
-    return computed.clamp(185.0, 200.0);
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final flightsAsync = ref.watch(popularFlightsProvider);
-    final listHeight = _listHeight(context);
+    final listHeight = context.h(240);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: EdgeInsets.symmetric(horizontal: context.w(26)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Saved trips',
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 22,
+                  fontSize: context.sp(18),
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF0A0A0A),
                 ),
@@ -869,7 +831,7 @@ class _PopularFlightsSection extends ConsumerWidget {
                 child: Text(
                   'See more',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 16,
+                    fontSize: context.sp(13),
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF2563EB),
                   ),
@@ -878,17 +840,18 @@ class _PopularFlightsSection extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: context.h(14)),
         flightsAsync.when(
           loading: () => SizedBox(
             height: listHeight,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(left: 24, right: 8),
+              padding: EdgeInsets.only(
+                  left: context.w(24), right: context.w(8)),
               itemCount: 3,
-              itemBuilder: (_, __) => const Padding(
-                padding: EdgeInsets.only(right: 14),
-                child: PopularFlightSkeleton(),
+              itemBuilder: (_, __) => Padding(
+                padding: EdgeInsets.only(right: context.w(14)),
+                child: const PopularFlightSkeleton(),
               ),
             ),
           ),
@@ -899,10 +862,11 @@ class _PopularFlightsSection extends ConsumerWidget {
               height: listHeight,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(left: 24, right: 8),
+                padding: EdgeInsets.only(
+                    left: context.w(24), right: context.w(8)),
                 itemCount: response.flights.length,
                 itemBuilder: (ctx, i) => Padding(
-                  padding: const EdgeInsets.only(right: 14),
+                  padding: EdgeInsets.only(right: context.w(14)),
                   child: _PopularFlightCard(flight: response.flights[i]),
                 ),
               ),
@@ -914,9 +878,6 @@ class _PopularFlightsSection extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// POPULAR FLIGHT CARD — Ticket shape with live API data
-// ─────────────────────────────────────────────────────────────────────
 class _PopularFlightCard extends StatelessWidget {
   final FlightModel flight;
   const _PopularFlightCard({required this.flight});
@@ -924,32 +885,32 @@ class _PopularFlightCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 350,
+      width: context.w(320),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(context.r(20)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ClipPath(
-        clipper: AppTicketClipper(notchFromBottom: 60),
+        clipper: AppTicketClipper(notchFromBottom: 75),
         child: Container(
           color: Colors.white,
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+          padding: EdgeInsets.fromLTRB(
+              context.w(16), context.h(14), context.w(16), context.h(16)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.max,
             children: [
-              // Airline name
               Center(
                 child: Text(
                   flight.airlineName,
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 15,
+                    fontSize: context.sp(24),
                     fontWeight: FontWeight.w800,
                     fontStyle: FontStyle.italic,
                     color: const Color(0xFF16A34A),
@@ -958,121 +919,111 @@ class _PopularFlightCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(height: 10),
-              // Times row
+              SizedBox(height: context.h(6)),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    flight.departureTime,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF2563EB),
-                    ),
-                  ),
-                  Expanded(
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: CustomPaint(
-                            size: const Size(double.infinity, 1),
-                            painter: AppDashedLinePainter(),
-                          ),
-                        ),
-                        Container(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 4),
-                          color: Colors.white,
-                          child: const Icon(
-                            Icons.flight_rounded,
-                            size: 16,
-                            color: Color(0xFF2563EB),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    flight.arrivalTime,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF2563EB),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              // Codes + duration
-              Row(
-                children: [
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: flight.departureCode,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0A0A0A),
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' (${flight.departureCity})',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xFF6B7280),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        flight.duration,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        flight.departureTime,
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11,
-                          color: const Color(0xFF9CA3AF),
-                          fontWeight: FontWeight.w500,
+                          fontSize: context.sp(12),
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF2563EB),
                         ),
                       ),
-                    ),
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: flight.arrivalCode,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0A0A0A),
-                          ),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: flight.departureCode,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: context.sp(16),
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF0A0A0A),
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' (${flight.departureCity})',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: context.sp(12),
+                                fontWeight: FontWeight.w400,
+                                color: const Color(0xFF6B7280),
+                              ),
+                            ),
+                          ],
                         ),
-                        TextSpan(
-                          text: ' (${flight.arrivalCity})',
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          'assets/icons/flyby_plane_icon.png',
+                          width: context.r(58),
+                          height: context.r(58),
+                          fit: BoxFit.contain,
+                        ),
+                        Text(
+                          flight.duration,
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xFF6B7280),
+                            fontSize: context.sp(12),
+                            color: const Color(0xFF9CA3AF),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
                   ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        flight.arrivalTime,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: context.sp(12),
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF2563EB),
+                        ),
+                      ),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: flight.arrivalCode,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: context.sp(16),
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF0A0A0A),
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' (${flight.arrivalCity})',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: context.sp(12),
+                                fontWeight: FontWeight.w400,
+                                color: const Color(0xFF6B7280),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-              const Spacer(),
+              SizedBox(height: context.h(33)),
               CustomPaint(
                 size: const Size(double.infinity, 1),
                 painter: AppDashedLinePainter(),
               ),
-              const SizedBox(height: 14),
-              // Price & stops
+              SizedBox(height: context.h(14)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -1082,17 +1033,17 @@ class _PopularFlightCard extends StatelessWidget {
                       Text(
                         'PRICE',
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: 10,
+                          fontSize: context.sp(10),
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF9CA3AF),
                           letterSpacing: 0.5,
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      SizedBox(height: context.h(3)),
                       Text(
                         '\$${flight.price.toInt()}',
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: 14,
+                          fontSize: context.sp(14),
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF2563EB),
                         ),
@@ -1105,19 +1056,19 @@ class _PopularFlightCard extends StatelessWidget {
                       Text(
                         'STOPS',
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: 10,
+                          fontSize: context.sp(10),
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF9CA3AF),
                           letterSpacing: 0.5,
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      SizedBox(height: context.h(3)),
                       Text(
                         flight.stops == 0
                             ? 'Direct'
                             : '${flight.stops} stop${flight.stops > 1 ? 's' : ''}',
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12,
+                          fontSize: context.sp(12),
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF0A0A0A),
                         ),
@@ -1133,4 +1084,3 @@ class _PopularFlightCard extends StatelessWidget {
     );
   }
 }
-
