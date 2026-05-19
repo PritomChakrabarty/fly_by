@@ -22,52 +22,59 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF3B82F6),
-              Color(0xFF60A5FA),
-              Color(0xFFBFDBFE),
-              Color(0xFFF1F5F9),
-              Color(0xFFF1F5F9),
-            ],
-            stops: [0.0, 0.15, 0.30, 0.48, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-          children: [
-            const OfflineBanner(),
-            Expanded(child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const _TopBar(),
-                      const SizedBox(height: 28),
-                      const _SearchCard(),
-                    ],
-                  ),
+      backgroundColor: const Color(0xFFF1F5F9),
+      body: Stack(
+        children: [
+          // Gradient pinned to full screen — never leaves a gap on any device
+          const SizedBox.expand(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF3B82F6),
+                    Color(0xFF60A5FA),
+                    Color(0xFFBFDBFE),
+                    Color(0xFFF1F5F9),
+                    Color(0xFFF1F5F9),
+                  ],
+                  stops: [0.0, 0.15, 0.30, 0.48, 1.0],
                 ),
-                const SizedBox(height: 28),
-                const _PopularFlightsSection(),
-                const SizedBox(height: 32),
-              ],
+              ),
             ),
           ),
-          ),      // closes Expanded
-        ],        // closes outer Column.children
-        ),        // closes outer Column
-        ),        // closes SafeArea
-      ),          // closes Container
-    );            // closes Scaffold
+          // Content layer — scrollable so it never overflows on any screen size
+          SafeArea(
+            bottom: false,
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const OfflineBanner(),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 18),
+                        const _TopBar(),
+                        const SizedBox(height: 28),
+                        const _SearchCard(),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  const _PopularFlightsSection(),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -383,7 +390,7 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _label('From'),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 16),
                               Text(
                                 fromEmpty ? 'Select departure airport' : fromDisplay,
                                 style: GoogleFonts.plusJakartaSans(
@@ -418,7 +425,7 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _label('To'),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 16),
                               Text(
                                 toEmpty ? 'Select arrival airport' : toDisplay,
                                 style: GoogleFonts.plusJakartaSans(
@@ -488,7 +495,7 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _label('Departure'),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 16),
                           Row(
                             children: [
                               Flexible(
@@ -536,7 +543,7 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _label('Travellers'),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 16),
                           Row(
                             children: [
                               Text(
@@ -555,7 +562,7 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           Container(height: 1, color: const Color(0xFFD1D5DB)),
                         ],
                       ),
@@ -563,7 +570,7 @@ class _SearchCardState extends ConsumerState<_SearchCard> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               // ── SEARCH BUTTON ────────────────────────────────────
               SizedBox(
                 width: double.infinity,
@@ -817,9 +824,29 @@ class _AirportSheetState extends ConsumerState<_AirportSheet> {
 class _PopularFlightsSection extends ConsumerWidget {
   const _PopularFlightsSection();
 
+  // Compute the card list height to fill remaining screen space.
+  // Subtracts the status bar, bottom nav bar, and all fixed widgets above
+  // the list from the total screen height, then clamps to a safe range.
+  double _listHeight(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    // Fixed heights above the card list (padding + TopBar + SearchCard + gaps + header)
+    const fixedAbove = 16.0   // padding top in Padding widget
+        + 48.0                // _TopBar (avatar height)
+        + 28.0                // SizedBox between TopBar and SearchCard
+        + 312.0               // _SearchCard approximate height
+        + 28.0                // SizedBox between SearchCard and section
+        + 26.0                // section header row
+        + 14.0;               // SizedBox between header and list
+    // Fixed heights below (bottom spacing + app bottom nav bar ~56dp + system nav ~48dp)
+    const fixedBelow = 32.0 + 104.0;
+    final computed = mq.size.height - mq.padding.top - fixedAbove - fixedBelow;
+    return computed.clamp(185.0, 200.0);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final flightsAsync = ref.watch(popularFlightsProvider);
+    final listHeight = _listHeight(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -832,7 +859,7 @@ class _PopularFlightsSection extends ConsumerWidget {
               Text(
                 'Saved trips',
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
+                  fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF0A0A0A),
                 ),
@@ -842,7 +869,7 @@ class _PopularFlightsSection extends ConsumerWidget {
                 child: Text(
                   'See more',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF2563EB),
                   ),
@@ -851,10 +878,10 @@ class _PopularFlightsSection extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 20),
         flightsAsync.when(
           loading: () => SizedBox(
-            height: 185,
+            height: listHeight,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.only(left: 24, right: 8),
@@ -865,11 +892,11 @@ class _PopularFlightsSection extends ConsumerWidget {
               ),
             ),
           ),
-          error: (_, __) => const SizedBox(height: 0),
+          error: (_, __) => const SizedBox.shrink(),
           data: (response) {
             if (response.flights.isEmpty) return const SizedBox.shrink();
             return SizedBox(
-              height: 185,
+              height: listHeight,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.only(left: 24, right: 8),
@@ -897,7 +924,7 @@ class _PopularFlightCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 300,
+      width: 350,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
@@ -915,6 +942,7 @@ class _PopularFlightCard extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
             children: [
               // Airline name
               Center(
@@ -1038,7 +1066,7 @@ class _PopularFlightCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 18),
+              const Spacer(),
               CustomPaint(
                 size: const Size(double.infinity, 1),
                 painter: AppDashedLinePainter(),

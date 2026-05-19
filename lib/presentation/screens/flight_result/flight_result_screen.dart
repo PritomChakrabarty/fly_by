@@ -89,9 +89,8 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoadingMore = false);
-        final msg = e is AppException
-            ? e.message
-            : 'Failed to load more flights.';
+        final msg =
+            e is AppException ? e.message : 'Failed to load more flights.';
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
             msg,
@@ -207,14 +206,15 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
                             : const Color(0xFFDBEAFE),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF2563EB).withValues(alpha: 0.25),
+                            color:
+                                const Color(0xFF2563EB).withValues(alpha: 0.25),
                             blurRadius: 16,
                             offset: const Offset(0, 6),
                           ),
                         ],
                       ),
                       child: Icon(
-                        Icons.tune_rounded,
+                        Icons.filter_alt_outlined,
                         size: 26,
                         color: params.hasActiveFilters
                             ? Colors.white
@@ -256,7 +256,6 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
 
   // ── HEADER ────────────────────────────────────────────────────────
   Widget _buildHeader(BuildContext context, FlightSearchParams params) {
-    final dateLabel = params.date.isEmpty ? '' : ' · ${_fmtDate(params.date)}';
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Row(
@@ -266,27 +265,23 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
             onTap: () => context.pop(),
           ),
           Expanded(
-            child: Column(
-              children: [
-                Text(
-                  '${params.from} → ${params.to}',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0A0A0A),
-                  ),
+            child: Center(
+              child: Text(
+                'Flight result',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0A0A0A),
                 ),
-                Text(
-                  '${params.passengers} pax$dateLabel',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12,
-                    color: const Color(0xFF6B7280),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-          const SizedBox(width: 40),
+          CircularIconButton(
+            icon: Icons.more_vert_rounded,
+            onTap: () {
+              // Optional: show a popup menu later
+            },
+          ),
         ],
       ),
     );
@@ -313,11 +308,10 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 18, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                   decoration: BoxDecoration(
-                    color:
-                        isActive ? const Color(0xFF2563EB) : Colors.white,
+                    color: isActive ? const Color(0xFF2563EB) : Colors.white,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
@@ -331,9 +325,7 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: isActive
-                          ? Colors.white
-                          : const Color(0xFF0A0A0A),
+                      color: isActive ? Colors.white : const Color(0xFF0A0A0A),
                     ),
                   ),
                 ),
@@ -405,8 +397,18 @@ class _FlightResultScreenState extends ConsumerState<FlightResultScreen> {
     try {
       final d = DateTime.parse(date);
       const months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
       ];
       const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
       return '${days[d.weekday - 1]}, ${d.day} ${months[d.month - 1]}';
@@ -584,7 +586,8 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                         activeTrackColor: const Color(0xFF2563EB),
                         inactiveTrackColor: const Color(0xFFDBEAFE),
                         thumbColor: const Color(0xFF2563EB),
-                        overlayColor: const Color(0xFF2563EB).withValues(alpha: 0.12),
+                        overlayColor:
+                            const Color(0xFF2563EB).withValues(alpha: 0.12),
                         trackHeight: 3,
                       ),
                       child: RangeSlider(
@@ -729,9 +732,7 @@ class _Chip extends StatelessWidget {
         color: active ? const Color(0xFF2563EB) : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: active
-              ? const Color(0xFF2563EB)
-              : const Color(0xFFE2E8F0),
+          color: active ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
           width: 1.5,
         ),
       ),
@@ -755,8 +756,9 @@ class _FlightCard extends StatelessWidget {
   const _FlightCard({required this.flight});
 
   // Extract 2-char IATA code from flight number (e.g. "SG801" → "SG")
-  String get _iata =>
-      flight.flightNumber.length >= 2 ? flight.flightNumber.substring(0, 2) : '';
+  String get _iata => flight.flightNumber.length >= 2
+      ? flight.flightNumber.substring(0, 2)
+      : '';
 
   Widget get _logoFallback => Center(
         child: Text(
@@ -829,7 +831,9 @@ class _FlightCard extends StatelessWidget {
                               height: 28,
                               fit: BoxFit.contain,
                               loadingBuilder: (_, child, progress) =>
-                                  progress == null ? child : const SizedBox.shrink(),
+                                  progress == null
+                                      ? child
+                                      : const SizedBox.shrink(),
                               errorBuilder: (_, __, ___) => _logoFallback,
                             )
                           : _logoFallback,
@@ -1035,4 +1039,3 @@ class _FlightCard extends StatelessWidget {
     );
   }
 }
-

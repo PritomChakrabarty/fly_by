@@ -171,6 +171,7 @@ class PopularFlightSkeleton extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
         children: [
           // Airline name (centered)
           Center(child: const SkeletonBox(width: 180, height: 15)),
@@ -194,7 +195,7 @@ class PopularFlightSkeleton extends StatelessWidget {
               SkeletonBox(width: 110, height: 11),
             ],
           ),
-          const SizedBox(height: 18),
+          const Spacer(),
           Container(height: 1, color: const Color(0xFFE5E7EB)),
           const SizedBox(height: 14),
           // Price + stops
